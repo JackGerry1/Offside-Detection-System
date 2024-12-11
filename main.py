@@ -1,98 +1,122 @@
-import os 
+import os
 from ultralytics import YOLO
 import cv2
-import numpy as np
+from team_assigner.team_assigner import TeamAssigner
+from visualisation.visualise import visualise_detections
 
-# Get the current working directory
+# Paths
 CURRENT_DIR = os.getcwd()
 
-# Define the image and save directories
-image_directory = f'{CURRENT_DIR}/Football-Players-6/test/images/'
-save_directory_scratch = f'{CURRENT_DIR}/predictions_scratch/'
-save_directory_pretrained = f'{CURRENT_DIR}/predictions_pretrained/'
-test_directory_scratch = f'{CURRENT_DIR}/test_prediction/'
-test_image_path = 'Football-Players-6/train/images/37_jpg.rf.9d8350fda1247ff3b266ae2d577e024a.jpg'
-# Paths to models 
-pretrained_model_path = f'{CURRENT_DIR}/models/YOLOV8N_BEST_PRETRAINED.pt'
+# Model path
 scratch_model_path = f'{CURRENT_DIR}/models/YOLOV8N_SCRATCH_BEST.pt'
+model = YOLO(scratch_model_path)
 
-# Load pretrained model
-model = YOLO(pretrained_model_path)
+# Define colours for different classes
+colour_map = {
+    "referee": (0, 0, 0),  # Black
+    "football": (0, 165, 255),  # Orange
+    "goalkeeper": (255, 105, 180),  # Pink
+}
 
-# Create the save directory if it doesn't exist
-os.makedirs(test_directory_scratch, exist_ok=True)
+def process_single_image(image_path):
+    input_image = cv2.imread(image_path)
+    
+    # Run YOLO detection
+    results = model(image_path)
 
-### Test On Single Image
-results = model(
-    source=test_image_path, 
-    save=True, 
-    project=test_directory_scratch, 
-    name='.',        
-    exist_ok=True    
-)
-# Load the original YOLO-styled output image
-#output_image_path = os.path.join(test_directory_scratch, "37_jpg.rf.9d8350fda1247ff3b266ae2d577e024a.jpg")
-image = cv2.imread("Football-Players-6/train/images/37_jpg.rf.9d8350fda1247ff3b266ae2d577e024a.jpg")
+    # Find the player class ID (if not already determined)
+    player_class_id = None
+    for cls_id, cls_name in model.names.items():
+        if cls_name.lower() == "player":
+            player_class_id = cls_id
+            break
 
-# Define a color palette (example with 10 colors, you can expand it as needed)
-color_palette = [
-    (255, 0, 0), (0, 255, 0), (0, 0, 255), (255, 255, 0),
-    (255, 0, 255), (0, 255, 255), (128, 128, 0), (128, 0, 128),
-    (0, 128, 128), (128, 128, 128)
-]
+    # Collect player bounding boxes from YOLO results
+    player_detections = []
+    for r in results:
+        for box in r.boxes:
+            class_id = int(box.cls[0])
+            if class_id == player_class_id:
+                xyxy = box.xyxy[0].tolist()  # Extract bounding box coordinates as a list
+                player_detections.append(xyxy)
 
-# Process results
-for r in results:
-    if r.masks is not None:  # Check if masks are available
-        masks = r.masks.data.cpu().numpy()  # Convert masks to numpy arrays
+    # Initialize TeamAssigner
+    team_assigner = TeamAssigner()
 
-        # Iterate over each detected object
-        for i, box in enumerate(r.boxes):  
-            # Extract data
-            xyxy = box.xyxy[0].tolist()  # Convert to list
-            confidence = box.conf[0]  # Confidence score
-            class_id = int(box.cls[0])  # Class ID
-            class_name = model.names[class_id]  # Class name
+    # Assign team colours
+    team_assigner.assign_team_colour(input_image, player_detections)
+
+    # Visualize results
+    output_image = visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map)
+
+    # Save the output image
+    output_path = os.path.join(CURRENT_DIR, "output_single_image.jpg")
+    cv2.imwrite(output_path, output_image)
+    print(f"Output image saved at: {output_path}")
+
+def process_directory(image_directory, save_directory):
+    # Ensure the save directory exists
+    os.makedirs(save_directory, exist_ok=True)
+
+    # Process all images in the directory
+    for filename in os.listdir(image_directory):
+        if filename.lower().endswith(('.png', '.jpg', '.jpeg')):  # Check if the file is an image
+            image_path = os.path.join(image_directory, filename)
+            save_path = os.path.join(save_directory, filename)
+
+            # Initialize TeamAssigner
+            team_assigner = TeamAssigner()
             
-            # Extract bounding box coordinates
-            x_min, y_min, x_max, y_max = map(int, xyxy)  # Convert to integers
-            
-            # Get color for the class
-            color = color_palette[class_id % len(color_palette)]  # Cycle through palette if classes exceed colors
+            # input image
+            input_image = cv2.imread(image_path)
 
-            # Apply mask with transparency
-            mask = masks[i]
-            mask = cv2.resize(mask, (image.shape[1], image.shape[0]))  # Resize mask to match image size
-            mask = (mask > 0.5).astype(np.uint8)  # Binarize mask
-            colored_mask = np.zeros_like(image, dtype=np.uint8)
-            colored_mask[:, :, 0] = color[0]
-            colored_mask[:, :, 1] = color[1]
-            colored_mask[:, :, 2] = color[2]
+            # Run YOLO detection
+            results = model(image_path)
 
-            # Blend mask with the original image
-            image = cv2.addWeighted(image, 1.0, colored_mask * mask[:, :, None], 0.5, 0)
+            # Find the player class ID
+            player_class_id = None
+            for cls_id, cls_name in model.names.items():
+                if cls_name.lower() == "player":
+                    player_class_id = cls_id
+                    break
 
-            # Draw bounding box
-            cv2.rectangle(image, (x_min, y_min), (x_max, y_max), color, 2)
+            # Collect player bounding boxes from YOLO results
+            player_detections = []
+            for r in results:
+                for box in r.boxes:
+                    class_id = int(box.cls[0])
+                    if class_id == player_class_id:
+                        xyxy = box.xyxy[0].tolist()  # Extract bounding box coordinates as a list
+                        player_detections.append(xyxy)
 
-            # Format and add text for class, confidence, and xyxy positions
-            label1 = f"{class_name} {confidence:.2f}"
-            label2 = f"X1, Y1: ({x_min}, {y_min})"
-            label3 = f"X2, Y2: ({x_max}, {y_max})"
+            # Assign team colours
+            team_assigner.assign_team_colour(input_image, player_detections)
 
-            # Text positions
-            text_y1 = y_min - 50 if y_min - 50 > 10 else y_min + 18
-            text_y2 = text_y1 + 14  # Adjusted for smaller font
-            text_y3 = text_y2 + 14  # Adjusted for smaller font
+            # Visualize results
+            output_image = visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map)
 
-            # Add text with smaller font and class color
-            font_scale = 0.35  # Smaller font scale
-            thickness = 1  # Optional: Adjust text thickness
-            cv2.putText(image, label1, (x_min, text_y1), cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, thickness)
-            cv2.putText(image, label2, (x_min, text_y2), cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, thickness)
-            cv2.putText(image, label3, (x_min, text_y3), cv2.FONT_HERSHEY_SIMPLEX, font_scale, color, thickness)
+            # Save the output image
+            cv2.imwrite(save_path, output_image)
+            print(f"Processed and saved: {filename}")
 
-# Save the updated image with masks, bounding boxes, and annotations
-output_path = os.path.join(test_directory_scratch, "output_with_masks_and_text.jpg")
-cv2.imwrite(output_path, image)
-print(f"Output image saved at: {output_path}")
+def main():
+
+    # Prompt the user to choose the mode
+    mode = input("Enter '1' for a single image test or '2' for a directory of images: ").strip()
+
+    if mode == '1':
+        # Prompt for the path to the single image
+        test_image_path = 'Football-Players-6/test/images/10_jpg.rf.110b6e7625b4096e4cc1fbfb0f4f43c4.jpg'
+        process_single_image(test_image_path)
+
+    elif mode == '2':
+        # Prompt for the image directory and save directory
+        image_directory = f'{CURRENT_DIR}/Football-Players-6/test/images/'
+        save_directory = f'{CURRENT_DIR}/predictions_enhanced_KMeans/'
+        process_directory(image_directory, save_directory)
+
+    else:
+        print("Invalid input. Please enter either '1' or '2'.")
+
+if __name__ == "__main__":
+    main()
