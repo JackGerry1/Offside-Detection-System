@@ -40,13 +40,13 @@ def process_single_image(image_path):
                 xyxy = box.xyxy[0].tolist()  # Extract bounding box coordinates as a list
                 player_detections.append(xyxy)
 
-    # Initialize TeamAssigner
+    # Initialise TeamAssigner
     team_assigner = TeamAssigner()
 
     # Assign team colours
     team_assigner.assign_team_colour(input_image, player_detections)
 
-    # Visualize results
+    # Visualise results
     output_image = visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map)
 
     # Save the output image
@@ -64,9 +64,6 @@ def process_directory(image_directory, save_directory):
             image_path = os.path.join(image_directory, filename)
             save_path = os.path.join(save_directory, filename)
 
-            # Initialize TeamAssigner
-            team_assigner = TeamAssigner()
-            
             # input image
             input_image = cv2.imread(image_path)
 
@@ -88,6 +85,9 @@ def process_directory(image_directory, save_directory):
                     if class_id == player_class_id:
                         xyxy = box.xyxy[0].tolist()  # Extract bounding box coordinates as a list
                         player_detections.append(xyxy)
+
+            # Initialise TeamAssigner
+            team_assigner = TeamAssigner()
 
             # Assign team colours
             team_assigner.assign_team_colour(input_image, player_detections)
