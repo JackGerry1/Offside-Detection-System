@@ -1,3 +1,10 @@
+'''
+References: 
+Tarek, A. (2024). Football_Analysis Team Analysis Code. [online] GitHub. 
+Available at: https://github.com/abdullahtarek/football_analysis/blob/main/team_assigner/team_assigner.py [Accessed 11 Dec. 2024].
+
+'''
+
 import numpy as np
 from sklearn.cluster import KMeans
 

@@ -33,12 +33,11 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
             # Assign colours based on the class name
             if class_name.lower() in colour_map:
                 colour_bgr = colour_map[class_name.lower()]  # Use the defined colour map
-            elif class_id == player_class_id:  # For players, use team-specific colours
+            elif class_id == player_class_id:  
+                # For players, use team-specific colours
                 team_id = team_assigner.get_player_team(input_image, xyxy, player_id=i)
                 team_colour = team_assigner.team_colours[team_id]
                 colour_bgr = tuple(map(int, team_colour))  # Convert to BGR
-            else:
-                continue  # Skip unknown classes
 
             # Draw bounding box
             cv2.rectangle(output_image, (x_min, y_min), (x_max, y_max), colour_bgr, 2)
@@ -60,9 +59,11 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
             mask = masks[i]
             mask = cv2.resize(mask, (input_image.shape[1], input_image.shape[0]))
             mask = (mask > 0.5).astype(np.uint8)
-            coloured_mask = np.zeros_like(input_image, dtype=np.uint8)
-            coloured_mask[:, :, 0] = colour_bgr[0]
-            coloured_mask[:, :, 1] = colour_bgr[1]
-            coloured_mask[:, :, 2] = colour_bgr[2]
+            coloured_mask = np.zeros_like(input_image, dtype=np.uint8)  # Create an empty coloured mask
+            coloured_mask[:, :, 0] = colour_bgr[0]  # Assign blue channel
+            coloured_mask[:, :, 1] = colour_bgr[1]  # Assign green channel
+            coloured_mask[:, :, 2] = colour_bgr[2]  # Assign red channel
+
+            # Add the mask to the respective output image
             output_image = cv2.addWeighted(output_image, 1.0, coloured_mask * mask[:, :, None], 0.5, 0)
     return output_image
