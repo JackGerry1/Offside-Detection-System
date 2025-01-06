@@ -33,10 +33,10 @@ class TeamAssigner:
         # Clip to valid RGB range
         return np.clip(modified_colour, 0, 255)
 
-    def get_player_colour(self, frame, bbox):
-        # Extract the bounding box region from the frame
+    def get_player_colour(self, image, bbox):
+        # Extract the bounding box region from the image
         x_min, y_min, x_max, y_max = map(int, bbox)
-        image = frame[y_min:y_max, x_min:x_max]
+        image = image[y_min:y_max, x_min:x_max]
 
         # Focus on the top half of the resized bounding box for jersey colour
         top_half_image = image[:image.shape[0] // 2, :]
@@ -64,11 +64,11 @@ class TeamAssigner:
 
         return enhanced_colour
 
-    def assign_team_colour(self, frame, player_detections):
+    def assign_team_colour(self, image, player_detections):
         # Extract player colours from all detections
         player_colours = []
         for bbox in player_detections:
-            player_colour = self.get_player_colour(frame, bbox)
+            player_colour = self.get_player_colour(image, bbox)
             player_colours.append(player_colour)
         
         # Perform clustering on player colours to determine team colours
@@ -79,13 +79,13 @@ class TeamAssigner:
         self.team_colours[1] = kmeans.cluster_centers_[0]
         self.team_colours[2] = kmeans.cluster_centers_[1]
 
-    def get_player_team(self, frame, bbox, player_id):
+    def get_player_team(self, image, bbox, player_id):
         # If already assigned, return the team
         if player_id in self.player_team_dict:
             return self.player_team_dict[player_id]
 
         # Extract the player's dominant colour
-        player_colour = self.get_player_colour(frame, bbox)
+        player_colour = self.get_player_colour(image, bbox)
 
         # Predict the team using the KMeans model
         team_id = self.kmeans.predict(player_colour.reshape(1, -1))[0]

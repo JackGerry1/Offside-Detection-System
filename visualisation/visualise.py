@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map):
+def visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map, team1_role, team2_role, attack_direction):
     """
     Visualise YOLO detection results with class-specific colours, confidence scores, and masks.
 
@@ -12,7 +12,8 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
         team_assigner: TeamAssigner instance for assigning team colours.
         player_class_id (int): Class ID for players.
         colour_map (dict): Mapping of class names to BGR colours.
-
+        team1_role (str): Role assigned to Team 1 (e.g., "Attack", "Defense").
+        team2_role (str): Role assigned to Team 2 (e.g., "Attack", "Defense").
     Returns:
         np.ndarray: Image with bounding boxes, masks, and labels visualized.
     """
@@ -39,6 +40,9 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
                 team_colour = team_assigner.team_colours[team_id]
                 colour_bgr = tuple(map(int, team_colour))  # Convert to BGR
 
+                # Set team label with role
+                team_label = f"Team {team_id} ({team1_role if team_id == 1 else team2_role})"
+
             # Draw bounding box
             cv2.rectangle(output_image, (x_min, y_min), (x_max, y_max), colour_bgr, 2)
 
@@ -46,7 +50,7 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
             font_scale = 0.5
             thickness = 1
             text_colour = (255, 255, 255)
-            label1 = f"Team {team_id}" if class_name.lower() == "player" else ""
+            label1 = team_label if class_name.lower() == "player" else ""
             label2 = f"{class_name} {confidence:.2f}"
             label_y1 = y_min - 30 if y_min - 30 > 10 else y_min + 20
             label_y2 = label_y1 + 20
@@ -64,6 +68,13 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
             coloured_mask[:, :, 1] = colour_bgr[1]  # Assign green channel
             coloured_mask[:, :, 2] = colour_bgr[2]  # Assign red channel
 
+            # Add attack direction indicator
+            h, _, _ = output_image.shape
+            if attack_direction.lower() == "left":
+                cv2.putText(output_image, "Attack Direction: Left", (50, h - 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            elif attack_direction.lower() == "right":
+                cv2.putText(output_image, "Attack Direction: Right", (50, h - 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            
             # Add the mask to the respective output image
             output_image = cv2.addWeighted(output_image, 1.0, coloured_mask * mask[:, :, None], 0.5, 0)
     return output_image
