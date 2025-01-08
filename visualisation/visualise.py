@@ -1,9 +1,59 @@
 import cv2
 import numpy as np
 
+
+def find_extreme_players(player_boxes, attack_direction):
+    """
+    Find the furthest forward attacker and furthest back defender based on the attack direction.
+
+    Args:
+        player_boxes (list): List of dictionaries with player coordinates and team assignments.
+        attack_direction (str): Attack direction, either "left" or "right".
+
+    Returns:
+        tuple: Furthest forward attacker, Furthest back defender.
+    """
+    furthest_forward_attacker = None
+    furthest_back_defender = None
+
+    # Initialise variables for comparison
+    if attack_direction:
+        max_x_attacker = -float('inf')
+        max_x_defender = -float('inf') 
+        min_x_attacker = float('inf')
+        min_x_defender = float('inf')
+
+    for player in player_boxes:
+
+        x_min, _, x_max, _ = player['coords']  # Bounding box coordinates
+        role = player['role']  # Attack or Defense
+
+        print(f"PLAYER: {player}")
+
+        if attack_direction.lower() == "right":
+            # Furthest forward means highest x_max for attackers
+            if role == "Attack" and x_max > max_x_attacker:
+                max_x_attacker = x_max
+                furthest_forward_attacker = player
+            # Furthest back means highest x_max for defenders (closest to the attack direction)
+            if role == "Defense" and x_max > max_x_defender:
+                max_x_defender = x_max
+                furthest_back_defender = player
+        elif attack_direction.lower() == "left":
+            # Furthest forward means lowest x_min for attackers
+            if role == "Attack" and x_min < min_x_attacker:
+                min_x_attacker = x_min
+                furthest_forward_attacker = player
+            # Furthest back means lowest x_min for defenders (closest to the attack direction)
+            if role == "Defense" and x_min < min_x_defender:
+                min_x_defender = x_min
+                furthest_back_defender = player
+
+    return furthest_forward_attacker, furthest_back_defender
+
 def visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map, team1_role, team2_role, attack_direction):
     """
-    Visualise YOLO detection results with class-specific colours, confidence scores, and masks.
+    Visualize YOLO detection results with class-specific colours, bounding boxes, and masks.
 
     Args:
         input_image (np.ndarray): The input image.
@@ -14,67 +64,78 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
         colour_map (dict): Mapping of class names to BGR colours.
         team1_role (str): Role assigned to Team 1 (e.g., "Attack", "Defense").
         team2_role (str): Role assigned to Team 2 (e.g., "Attack", "Defense").
+        attack_direction (str): Direction of the attack ("left" or "right").
+
     Returns:
         np.ndarray: Image with bounding boxes, masks, and labels visualized.
     """
     output_image = input_image.copy()
-    
+    player_boxes = []
+
     for r in results:
-        masks = r.masks.data.cpu().numpy()  # Convert masks to numpy arrays
-        for i, box in enumerate(r.boxes):  # Iterate over the bounding boxes
-            # Extract bounding box coordinates
+        masks = r.masks.data.cpu().numpy()  # Extract masks as numpy arrays
+        for i, box in enumerate(r.boxes):  # Iterate over detections
             xyxy = box.xyxy[0].tolist()
             x_min, y_min, x_max, y_max = map(int, xyxy)
-
-            # Extract confidence and class details
+            class_id = int(box.cls[0])
+            class_name = model.names[class_id]  # Get class name
             confidence = box.conf[0]  # Confidence score
-            class_id = int(box.cls[0])  # Class ID
-            class_name = model.names[class_id]  # Class name
 
-            # Assign colours based on the class name
+            # Assign colours based on the class name or team
             if class_name.lower() in colour_map:
-                colour_bgr = colour_map[class_name.lower()]  # Use the defined colour map
-            elif class_id == player_class_id:  
-                # For players, use team-specific colours
+                colour_bgr = colour_map[class_name.lower()]  # Colour for non-player objects
+            elif class_id == player_class_id:  # Player detection
                 team_id = team_assigner.get_player_team(input_image, xyxy, player_id=i)
-                team_colour = team_assigner.team_colours[team_id]
-                colour_bgr = tuple(map(int, team_colour))  # Convert to BGR
-
-                # Set team label with role
-                team_label = f"Team {team_id} ({team1_role if team_id == 1 else team2_role})"
+                role = team1_role if team_id == 1 else team2_role
+                colour_bgr = team_assigner.team_colours[team_id]
+                player_boxes.append({"coords": xyxy, "team": team_id, "role": role, "index": i})
+            else:
+                continue  # Skip unclassified objects
 
             # Draw bounding box
             cv2.rectangle(output_image, (x_min, y_min), (x_max, y_max), colour_bgr, 2)
 
-            # Create and position labels
+            # Create labels
             font_scale = 0.5
             thickness = 1
             text_colour = (255, 255, 255)
-            label1 = team_label if class_name.lower() == "player" else ""
-            label2 = f"{class_name} {confidence:.2f}"
+            team_label = f"Team {team_id} ({role}), ({x_min}, {x_max})"
+            class_conf_label = f"{class_name} {confidence:.2f}"
+            
+            label1 = team_label if class_id == player_class_id else ""
+            label2 = class_conf_label 
             label_y1 = y_min - 30 if y_min - 30 > 10 else y_min + 20
             label_y2 = label_y1 + 20
 
             # Add labels to the image
-            cv2.putText(output_image, label1, (x_min, label_y1), cv2.FONT_HERSHEY_SIMPLEX, font_scale, colour_bgr, thickness)
+            cv2.putText(output_image, label1, (x_min, label_y1), cv2.FONT_HERSHEY_SIMPLEX, font_scale, colour_bgr, thickness * 2)
             cv2.putText(output_image, label2, (x_min, label_y2), cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_colour, thickness)
-
-            # Apply segmentation masks if available
+            
+            # Apply segmentation mask if available
             mask = masks[i]
             mask = cv2.resize(mask, (input_image.shape[1], input_image.shape[0]))
             mask = (mask > 0.5).astype(np.uint8)
-            coloured_mask = np.zeros_like(input_image, dtype=np.uint8)  # Create an empty coloured mask
-            coloured_mask[:, :, 0] = colour_bgr[0]  # Assign blue channel
-            coloured_mask[:, :, 1] = colour_bgr[1]  # Assign green channel
-            coloured_mask[:, :, 2] = colour_bgr[2]  # Assign red channel
+            coloured_mask = np.zeros_like(input_image, dtype=np.uint8)
+            coloured_mask[:, :, 0] = colour_bgr[0]
+            coloured_mask[:, :, 1] = colour_bgr[1]
+            coloured_mask[:, :, 2] = colour_bgr[2]
 
-            # Add attack direction indicator
-            h, _, _ = output_image.shape
-            if attack_direction.lower() == "left":
-                cv2.putText(output_image, "Attack Direction: Left", (50, h - 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            elif attack_direction.lower() == "right":
-                cv2.putText(output_image, "Attack Direction: Right", (50, h - 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-            
-            # Add the mask to the respective output image
             output_image = cv2.addWeighted(output_image, 1.0, coloured_mask * mask[:, :, None], 0.5, 0)
+
+    # Find extreme players
+    furthest_forward_attacker, furthest_back_defender = find_extreme_players(player_boxes, attack_direction)
+
+    # Highlight extreme players
+    for extreme_player, color in zip([furthest_forward_attacker, furthest_back_defender], [(0, 255, 0), (255, 0, 0)]):
+        if extreme_player:
+            x_min, y_min, x_max, y_max = map(int, extreme_player["coords"])
+            cv2.rectangle(output_image, (x_min, y_min), (x_max, y_max), color, 3)
+
+    # Add attack direction indicator
+    
+    if attack_direction:
+        h, _, _ = output_image.shape
+        direction_text = f"Attack Direction: {attack_direction.capitalize()}"
+        cv2.putText(output_image, direction_text, (50, h - 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+
     return output_image
