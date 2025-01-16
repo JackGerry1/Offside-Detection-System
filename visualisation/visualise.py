@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+from utils.utils import draw_bounding_box_with_label
 
 def find_extreme_players(player_boxes, attack_direction):
     """
@@ -16,42 +16,35 @@ def find_extreme_players(player_boxes, attack_direction):
     furthest_forward_attacker = None
     furthest_back_defender = None
 
-    # Initialise variables for comparison
-    if attack_direction:
-        max_x_attacker = -float('inf')
-        max_x_defender = -float('inf') 
-        min_x_attacker = float('inf')
-        min_x_defender = float('inf')
+    # Determine comparison multipliers based on attack direction
+    direction_multiplier = 1 if attack_direction.lower() == "right" else -1
+
+    # Initialize variables for comparison
+    extreme_forward_value = -float('inf')
+    extreme_back_value = -float('inf')
 
     for player in player_boxes:
-
         x_min, _, x_max, _ = player['coords']  # Bounding box coordinates
         role = player['role']  # Attack or Defense
 
-        print(f"PLAYER: {player}")
+        # Calculate effective comparison value based on direction
+        forward_value = direction_multiplier * x_max
+        back_value = direction_multiplier * x_min
 
-        if attack_direction.lower() == "right":
-            # Furthest forward means highest x_max for attackers
-            if role == "Attack" and x_max > max_x_attacker:
-                max_x_attacker = x_max
-                furthest_forward_attacker = player
-            # Furthest back means highest x_max for defenders (closest to the attack direction)
-            if role == "Defense" and x_max > max_x_defender:
-                max_x_defender = x_max
-                furthest_back_defender = player
-        elif attack_direction.lower() == "left":
-            # Furthest forward means lowest x_min for attackers
-            if role == "Attack" and x_min < min_x_attacker:
-                min_x_attacker = x_min
-                furthest_forward_attacker = player
-            # Furthest back means lowest x_min for defenders (closest to the attack direction)
-            if role == "Defense" and x_min < min_x_defender:
-                min_x_defender = x_min
-                furthest_back_defender = player
+        # Update furthest forward attacker
+        if role == "Attack" and forward_value > extreme_forward_value:
+            extreme_forward_value = forward_value
+            furthest_forward_attacker = player
+
+        # Update furthest back defender
+        if role == "Defense" and back_value > extreme_back_value:
+            extreme_back_value = back_value
+            furthest_back_defender = player
 
     return furthest_forward_attacker, furthest_back_defender
 
-def visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map, team1_role, team2_role, attack_direction):
+
+def visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map, team1_role, team2_role, attack_direction, custom_highlights=None):
     """
     Visualize YOLO detection results with class-specific colours, bounding boxes, and masks.
 
@@ -82,15 +75,14 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
             confidence = box.conf[0]  # Confidence score
 
             # Assign colours based on the class name or team
-            if class_name.lower() in colour_map:
-                colour_bgr = colour_map[class_name.lower()]  # Colour for non-player objects
-            elif class_id == player_class_id:  # Player detection
+            if class_id == player_class_id:  # Player detection
                 team_id = team_assigner.get_player_team(input_image, xyxy, player_id=i)
                 role = team1_role if team_id == 1 else team2_role
                 colour_bgr = team_assigner.team_colours[team_id]
                 player_boxes.append({"coords": xyxy, "team": team_id, "role": role, "index": i})
             else:
-                continue  # Skip unclassified objects
+                colour_bgr = colour_map[class_name.lower()]  # Colour for non-player objects
+            
 
             # Draw bounding box
             cv2.rectangle(output_image, (x_min, y_min), (x_max, y_max), colour_bgr, 2)
@@ -99,7 +91,7 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
             font_scale = 0.5
             thickness = 1
             text_colour = (255, 255, 255)
-            team_label = f"Team {team_id} ({role}), ({x_min}, {x_max})"
+            team_label = f"Team {team_id} {role}"
             class_conf_label = f"{class_name} {confidence:.2f}"
             
             label1 = team_label if class_id == player_class_id else ""
@@ -122,14 +114,25 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
 
             output_image = cv2.addWeighted(output_image, 1.0, coloured_mask * mask[:, :, None], 0.5, 0)
 
-    # Find extreme players
-    furthest_forward_attacker, furthest_back_defender = find_extreme_players(player_boxes, attack_direction)
+    if custom_highlights:
+        furthest_forward_attacker = custom_highlights.get("FA")
+        furthest_back_defender = custom_highlights.get("FBD")
+    else:
+        furthest_forward_attacker, furthest_back_defender = find_extreme_players(player_boxes, attack_direction)
+    
 
     # Highlight extreme players
-    for extreme_player, color in zip([furthest_forward_attacker, furthest_back_defender], [(0, 255, 0), (255, 0, 0)]):
+    for extreme_player, colour_label in zip(
+    [furthest_forward_attacker, furthest_back_defender], 
+    [(0, 255, 0, "FA"), (255, 0, 0, "FBD")]
+    ):
         if extreme_player:
-            x_min, y_min, x_max, y_max = map(int, extreme_player["coords"])
-            cv2.rectangle(output_image, (x_min, y_min), (x_max, y_max), color, 3)
+            colour, label = colour_label[:3], colour_label[3]
+            
+            # Print information about the extreme player
+            print(f"OG Label: {label} - Player Info: Coords={extreme_player['coords']}, Team={extreme_player['team']}, Role={extreme_player['role']}")
+            
+            draw_bounding_box_with_label(output_image, extreme_player["coords"], colour, label)
 
     # Add attack direction indicator
     
