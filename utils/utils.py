@@ -23,6 +23,16 @@ def draw_bounding_box_with_label(image, coords, colour, label, font_scale=0.6, t
         font_scale (float): Font scale for the text.
         thickness (int): Thickness of the bounding box and text.
         text_colour (tuple): BGR colour for the text.
+    
+    References: 
+        Gallagher, J. (2023). How to Draw a Bounding Box Prediction Label with Python. [online] Roboflow Blog. 
+        Available at: https://blog.roboflow.com/how-to-draw-a-bounding-box-label-python/ [Accessed 11 Dec. 2024].
+        
+        OpenCV (2024). OpenCV: Drawing Functions in OpenCV. [online] Opencv.org. 
+        Available at: https://docs.opencv.org/3.4/dc/da5/tutorial_py_drawing_functions.html [Accessed 11 Dec. 2024].
+
+    Output: 
+        The bounding boxes for with the labels for furthest forward attacker and furthest back defender.  
     """
     x_min, y_min, x_max, y_max = map(int, coords)
     
@@ -39,6 +49,8 @@ def draw_bounding_box_with_label(image, coords, colour, label, font_scale=0.6, t
         (label_x, label_y - label_size[1] - 5),
         (label_x + label_size[0] + 5, label_y + 5)
     )
+    
+    # draw the bounding box and add the labels text. 
     cv2.rectangle(image, label_background[0], label_background[1], colour, -1)
     cv2.putText(
         image, label, (label_x, label_y),
