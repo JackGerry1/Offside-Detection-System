@@ -3,7 +3,8 @@ import os
 
 # Define paths and colour map
 CURRENT_DIR = os.getcwd()
-MODEL_PATH = f'{CURRENT_DIR}/models/YOLOV8N_SCRATCH_BEST.pt'
+MODEL_PATH = f'{CURRENT_DIR}/models/YOLOV8N_BEST.pt'
+PITCH_MODEL_PATH = f'{CURRENT_DIR}/models/YOLOV8NPOSE500BEST.pt'
 COLOUR_MAP = {
     "referee": (0, 0, 0),  # Black
     "football": (0, 165, 255),  # Orange

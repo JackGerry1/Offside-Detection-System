@@ -137,25 +137,25 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
 
     # if the user has created custom player highlights assign them to 
     # furthest forward attacker and furthest back defender, else the system will predict them. 
-    if custom_highlights:
-        furthest_forward_attacker = custom_highlights.get("FA")
-        furthest_back_defender = custom_highlights.get("FBD")
-    else:
-        furthest_forward_attacker, furthest_back_defender = find_extreme_players(player_boxes, attack_direction)
-    
-    # Highlight extreme players
-    for extreme_player, colour_label in zip(
-    [furthest_forward_attacker, furthest_back_defender], 
-    [(0, 255, 0, "FA"), (255, 0, 0, "FBD")]
-    ):
-        if extreme_player:
-            # extract corresponding label and colour. 
-            colour, label = colour_label[:3], colour_label[3]
-            
-            # Print information about the extreme player
-            print(f"OG Label: {label} - Player Info: Coords={extreme_player['coords']}, Team={extreme_player['team']}, Role={extreme_player['role']}")
-            
-            draw_bounding_box_with_label(output_image, extreme_player["coords"], colour, label)
+    #if custom_highlights:
+    #    furthest_forward_attacker = custom_highlights.get("FA")
+    #    furthest_back_defender = custom_highlights.get("FBD")
+    #else:
+    #    furthest_forward_attacker, furthest_back_defender = find_extreme_players(player_boxes, attack_direction)
+    #
+    ## Highlight extreme players
+    #for extreme_player, colour_label in zip(
+    #[furthest_forward_attacker, furthest_back_defender], 
+    #[(0, 255, 0, "FA"), (255, 0, 0, "FBD")]
+    #):
+    #    if extreme_player:
+    #        # extract corresponding label and colour. 
+    #        colour, label = colour_label[:3], colour_label[3]
+    #        
+    #        # Print information about the extreme player
+    #        print(f"OG Label: {label} - Player Info: Coords={extreme_player['coords']}, Team={extreme_player['team']}, Role={extreme_player['role']}")
+    #        
+    #        draw_bounding_box_with_label(output_image, extreme_player["coords"], colour, label)
 
     # Add attack direction indicator
     if attack_direction:
@@ -164,3 +164,21 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
         cv2.putText(output_image, direction_text, (50, h - 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     return output_image
+def visualise_keypoints(saved_image, keypoint_results):
+    output_image = saved_image.copy()
+    keypoints_data = [] 
+    
+    # Add keypoint rendering
+    if keypoint_results:
+        for r in keypoint_results:
+            keypoints = r.keypoints.data.cpu().numpy()
+            for kp_set in keypoints:
+                for kp in kp_set:
+                    x, y, conf = kp
+                    if conf > 0.5:  # Only render keypoints with confidence > 0.5
+                        cv2.circle(output_image, (int(x), int(y)), 5, (0, 255, 0), -1)
+                        keypoints_data.append(kp)
+                        
+    
+    return output_image, keypoints_data
+

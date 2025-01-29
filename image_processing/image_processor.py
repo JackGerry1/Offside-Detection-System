@@ -2,16 +2,18 @@
 import cv2
 from ultralytics import YOLO
 from team_assigner.team_assigner import TeamAssigner
-from visualisation.visualise import visualise_detections
+from visualisation.visualise import visualise_detections, visualise_keypoints
 
 class ImageProcessor:
     # initalise ImageProcessor 
-    def __init__(self, model_path, colour_map):
+    def __init__(self, model_path, keypoint_modal_path, colour_map):
         # get variabels 
         self.model = YOLO(model_path)
+        self.pitch_modal = YOLO(keypoint_modal_path)
         self.colour_map = colour_map
         self.team_assigner = None
         self.processed_results = None
+        self.keypoint_results = None
         self.player_class_id = None
         self.input_image = None
 
@@ -33,6 +35,9 @@ class ImageProcessor:
         # Run YOLO detection and save results for future processing. 
         results = self.model(image_path)
         self.processed_results = results 
+
+        # Add path to keypoint model
+        keypoint_results = self.pitch_modal(image_path)
 
         # Find the player class ID, which corresponds to the "player" class
         self.player_class_id = next(
@@ -61,6 +66,7 @@ class ImageProcessor:
             team_id = self.team_assigner.get_player_team(input_image, player['coords'], player_id=player['id'])
             player["team"] = team_id
             player["role"] = None  # Placeholder; roles will be updated during role assignment
+            print(f"PLAYER: {player}")
 
         # store for usage later on. 
         self.player_boxes = player_boxes
@@ -71,5 +77,8 @@ class ImageProcessor:
             input_image, results, self.model, self.team_assigner, self.player_class_id, self.colour_map, "", "", ""
         )
 
-        return output_image
+        final_output_image, extracted_keypoints = visualise_keypoints(output_image, keypoint_results)
+        self.keypoint_results = extracted_keypoints  # Store keypoints for external access
+        
+        return final_output_image
 

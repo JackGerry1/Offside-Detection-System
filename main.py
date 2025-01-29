@@ -8,10 +8,10 @@ import cv2
 # import utilities and other functions
 from image_processing.image_processor import ImageProcessor
 from visualisation.visualise import visualise_detections
-from utils.utils import CURRENT_DIR, MODEL_PATH, COLOUR_MAP
+from utils.utils import CURRENT_DIR, MODEL_PATH, PITCH_MODEL_PATH, COLOUR_MAP
 
 # Initialise ImageProcessor
-processor = ImageProcessor(MODEL_PATH, COLOUR_MAP)
+processor = ImageProcessor(MODEL_PATH, PITCH_MODEL_PATH, COLOUR_MAP)
 
 class ImageApp:
     # GUI initialisation
@@ -154,6 +154,15 @@ class ImageApp:
             self.assign_roles_frame.pack(pady=10)
         else:
             print("No image uploaded!")
+    
+    def show_keypoint_values(self): 
+        keypoint_results = processor.keypoint_results
+
+        # Extract keypoints and print them
+        for idx, keypoint in enumerate(keypoint_results):
+            x, y, confidence = keypoint[0], keypoint[1], keypoint[2]
+            print(f"Keypoint {idx + 1}: X: {x:.2f}, Y: {y:.2f}, Confidence: {confidence:.4f}")
+
 
     def assign_roles(self):
         """
@@ -167,11 +176,15 @@ class ImageApp:
         team2_role = self.team2_role_var.get()
         attack_direction = self.attack_direction_var.get()
         results = processor.processed_results
-
+        
+        # Display keypoint values
+        self.show_keypoint_values()
+        
         if self.result_image_path:
             # Update the roles in processed_players
             for player in self.processed_players:
                 player['role'] = team1_role if player['team'] == 1 else team2_role
+                print(f"PLAYER: {player}")
 
             # update the visualised image with the corresponding team labels and attack direction. 
             updated_image = visualise_detections(
@@ -187,6 +200,7 @@ class ImageApp:
             )
 
             self.update_image(updated_image)
+            
 
     def on_image_click(self, event):
         """

@@ -8,7 +8,7 @@ from visualisation.visualise import visualise_detections
 CURRENT_DIR = os.getcwd()
 
 # Model path
-scratch_model_path = f'{CURRENT_DIR}/models/YOLOV8N_SCRATCH_BEST.pt'
+scratch_model_path = f'{CURRENT_DIR}/models/YOLOV8N_BEST.pt'
 model = YOLO(scratch_model_path)
 
 # Define colours for different classes
