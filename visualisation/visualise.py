@@ -164,6 +164,7 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
         cv2.putText(output_image, direction_text, (50, h - 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
     return output_image
+
 def visualise_keypoints(saved_image, keypoint_results):
     output_image = saved_image.copy()
     keypoints_data = [] 
@@ -176,7 +177,7 @@ def visualise_keypoints(saved_image, keypoint_results):
                 for kp in kp_set:
                     x, y, conf = kp
                     if conf > 0.5:  # Only render keypoints with confidence > 0.5
-                        cv2.circle(output_image, (int(x), int(y)), 5, (0, 255, 0), -1)
+                        cv2.circle(output_image, (int(x), int(y)), 5, (0, 255, 255), -1)
                         keypoints_data.append(kp)
                         
     
