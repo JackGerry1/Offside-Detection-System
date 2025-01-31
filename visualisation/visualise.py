@@ -176,10 +176,9 @@ def visualise_keypoints(saved_image, keypoint_results):
             for kp_set in keypoints:
                 for kp in kp_set:
                     x, y, conf = kp
+                    keypoints_data.append(kp)
                     if conf > 0.5:  # Only render keypoints with confidence > 0.5
                         cv2.circle(output_image, (int(x), int(y)), 5, (0, 255, 255), -1)
-                        keypoints_data.append(kp)
                         
     
     return output_image, keypoints_data
-

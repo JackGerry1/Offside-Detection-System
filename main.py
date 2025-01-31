@@ -4,11 +4,11 @@ from tkinter import filedialog, StringVar
 from PIL import Image, ImageTk
 import os
 import cv2
-
+from pitch_visualiser import display_player_data, display_keypoint_data, display_football_data, display_goalkeeper_data, display_referee_data
 # import utilities and other functions
 from image_processing.image_processor import ImageProcessor
 from visualisation.visualise import visualise_detections
-from utils.utils import CURRENT_DIR, MODEL_PATH, PITCH_MODEL_PATH, COLOUR_MAP
+from utils.utils import CURRENT_DIR, MODEL_PATH, PITCH_MODEL_PATH, COLOUR_MAP, PLAYER_CLASS_ID
 
 # Initialise ImageProcessor
 processor = ImageProcessor(MODEL_PATH, PITCH_MODEL_PATH, COLOUR_MAP)
@@ -80,11 +80,17 @@ class ImageApp:
         self.assign_roles_frame.pack_forget()
 
         # User choice for highlight type
-        self.highlight_choice_var = StringVar(value="Attacker")
-        highlight_label = tk.Label(self.assign_roles_frame, text="Highlight Type:")
-        highlight_label.grid(row=4, column=0, padx=5, pady=5)
-        highlight_menu = tk.OptionMenu(self.assign_roles_frame, self.highlight_choice_var, "Attacker", "Defender")
-        highlight_menu.grid(row=4, column=1, padx=5, pady=5)
+        #self.highlight_choice_var = StringVar(value="Attacker")
+        #highlight_label = tk.Label(self.assign_roles_frame, text="Highlight Type:")
+        #highlight_label.grid(row=4, column=0, padx=5, pady=5)
+        #highlight_menu = tk.OptionMenu(self.assign_roles_frame, self.highlight_choice_var, "Attacker", "Defender")
+        #highlight_menu.grid(row=4, column=1, padx=5, pady=5)
+
+        # Create Visualize Pitch button but hide it initially
+        self.visualize_pitch_button = tk.Button(self.root, text="Visualize Pitch", command=self.pass_data)
+        self.visualize_pitch_button.pack()
+        self.visualize_pitch_button.pack_forget() 
+
 
     def upload_and_display_image(self):
         """
@@ -155,15 +161,6 @@ class ImageApp:
         else:
             print("No image uploaded!")
     
-    def show_keypoint_values(self): 
-        keypoint_results = processor.keypoint_results
-
-        # Extract keypoints and print them
-        for idx, keypoint in enumerate(keypoint_results):
-            x, y, confidence = keypoint[0], keypoint[1], keypoint[2]
-            print(f"Keypoint {idx + 1}: X: {x:.2f}, Y: {y:.2f}, Confidence: {confidence:.4f}")
-
-
     def assign_roles(self):
         """
         Assigns roles of attack and defense to the teams identifed earlier, alongside the attack direction.  
@@ -177,14 +174,7 @@ class ImageApp:
         attack_direction = self.attack_direction_var.get()
         results = processor.processed_results
         
-        # Display keypoint values
-        self.show_keypoint_values()
-        
         if self.result_image_path:
-            # Update the roles in processed_players
-            for player in self.processed_players:
-                player['role'] = team1_role if player['team'] == 1 else team2_role
-                print(f"PLAYER: {player}")
 
             # update the visualised image with the corresponding team labels and attack direction. 
             updated_image = visualise_detections(
@@ -192,7 +182,7 @@ class ImageApp:
                 results,
                 processor.model,
                 processor.team_assigner,
-                processor.player_class_id,
+                PLAYER_CLASS_ID,
                 processor.colour_map,
                 team1_role,
                 team2_role,
@@ -200,6 +190,9 @@ class ImageApp:
             )
 
             self.update_image(updated_image)
+        
+            # **Show the "Visualize Pitch" button after roles are assigned**
+            self.visualize_pitch_button.pack(pady=0)
             
 
     def on_image_click(self, event):
@@ -273,7 +266,7 @@ class ImageApp:
                 results,
                 processor.model,
                 processor.team_assigner,
-                processor.player_class_id,
+                PLAYER_CLASS_ID,
                 processor.colour_map,
                 self.team1_role_var.get(),
                 self.team2_role_var.get(),
@@ -282,7 +275,28 @@ class ImageApp:
             )
 
             self.update_image(output_image)
+    
+    # pass data about keypoints and detected, refs, players, goalkeepers and footballs. 
+    def pass_data(self): 
+        """ Calls the pitch visualiser with processed player data and keypoints, only if data is available. """
 
+        if self.processed_players:
+            display_player_data(self.processed_players, self.team1_role_var.get(), self.team2_role_var.get())
+
+        if processor.keypoint_results:
+            display_keypoint_data(processor.keypoint_results)
+
+        if processor.referee_results:
+            display_referee_data(processor.referee_results)
+
+        if processor.goalkeeper_results:
+            display_goalkeeper_data(processor.goalkeeper_results)
+
+        if processor.football_results:
+            display_football_data(processor.football_results)
+
+
+        
 # Run the GUI
 if __name__ == "__main__":
     root = tk.Tk()

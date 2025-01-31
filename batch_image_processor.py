@@ -3,6 +3,7 @@ from ultralytics import YOLO
 import cv2
 from team_assigner.team_assigner import TeamAssigner
 from visualisation.visualise import visualise_detections
+from utils.utils import PLAYER_CLASS_ID
 
 # Paths
 CURRENT_DIR = os.getcwd()
@@ -24,19 +25,13 @@ def process_single_image(image_path):
     # Run YOLO detection
     results = model(image_path)
 
-    # Find the player class ID (if not already determined)
-    player_class_id = None
-    for cls_id, cls_name in model.names.items():
-        if cls_name.lower() == "player":
-            player_class_id = cls_id
-            break
 
     # Collect player bounding boxes from YOLO results
     player_detections = []
     for r in results:
         for box in r.boxes:
             class_id = int(box.cls[0])
-            if class_id == player_class_id:
+            if class_id == PLAYER_CLASS_ID:
                 xyxy = box.xyxy[0].tolist()  # Extract bounding box coordinates as a list
                 player_detections.append(xyxy)
 
@@ -47,7 +42,7 @@ def process_single_image(image_path):
     team_assigner.assign_team_colour(input_image, player_detections)
 
     # Visualise results
-    output_image = visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map, "", "", "")
+    output_image = visualise_detections(input_image, results, model, team_assigner, PLAYER_CLASS_ID, colour_map, "", "", "")
 
     # Save the output image
     output_path = os.path.join(CURRENT_DIR, "output_single_image.jpg")
@@ -70,19 +65,12 @@ def process_directory(image_directory, save_directory):
             # Run YOLO detection
             results = model(image_path)
 
-            # Find the player class ID
-            player_class_id = None
-            for cls_id, cls_name in model.names.items():
-                if cls_name.lower() == "player":
-                    player_class_id = cls_id
-                    break
-
             # Collect player bounding boxes from YOLO results
             player_detections = []
             for r in results:
                 for box in r.boxes:
                     class_id = int(box.cls[0])
-                    if class_id == player_class_id:
+                    if class_id == PLAYER_CLASS_ID:
                         xyxy = box.xyxy[0].tolist()  # Extract bounding box coordinates as a list
                         player_detections.append(xyxy)
 
@@ -93,7 +81,7 @@ def process_directory(image_directory, save_directory):
             team_assigner.assign_team_colour(input_image, player_detections)
 
             # Visualise results
-            output_image = visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map, "", "", "")
+            output_image = visualise_detections(input_image, results, model, team_assigner, PLAYER_CLASS_ID, colour_map, "", "", "")
 
             # Save the output image
             cv2.imwrite(save_path, output_image)

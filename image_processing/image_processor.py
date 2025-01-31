@@ -3,6 +3,7 @@ import cv2
 from ultralytics import YOLO
 from team_assigner.team_assigner import TeamAssigner
 from visualisation.visualise import visualise_detections, visualise_keypoints
+from utils.utils import FOOTBALL_CLASS_ID, GOALKEEPER_CLASS_ID, PLAYER_CLASS_ID, REFEREE_CLASS_ID
 
 class ImageProcessor:
     # initalise ImageProcessor 
@@ -14,7 +15,10 @@ class ImageProcessor:
         self.team_assigner = None
         self.processed_results = None
         self.keypoint_results = None
-        self.player_class_id = None
+        self.goalkeeper_results = None
+        self.referee_results = None
+        self.football_results = None
+        self.player_boxes = None
         self.input_image = None
 
     def process_image(self, image_path):
@@ -39,24 +43,34 @@ class ImageProcessor:
         # Add path to keypoint model
         keypoint_results = self.pitch_modal(image_path)
 
-        # Find the player class ID, which corresponds to the "player" class
-        self.player_class_id = next(
-            (cls_id for cls_id, cls_name in self.model.names.items() if cls_name.lower() == "player"), None
-        )
-
-        # Collect player bounding boxes and detections. 
         player_detections = []
         player_boxes = []
+        referee_boxes = []
+        football_boxes = []
+        goalkeeper_boxes = []
 
+        # Dictionary to map class IDs to their respective lists
+        class_map = {
+            PLAYER_CLASS_ID: (player_detections, player_boxes),
+            REFEREE_CLASS_ID: (referee_boxes, None),
+            FOOTBALL_CLASS_ID: (football_boxes, None),
+            GOALKEEPER_CLASS_ID: (goalkeeper_boxes, None),
+        }
+        # Collect player bounding boxes and detections. 
+        
         # loop through all bounding boxes, inside the results, and appending coords and id of players detected. 
         for r in results:
             for i, box in enumerate(r.boxes):
                 class_id = int(box.cls[0])
-                if class_id == self.player_class_id:
-                    xyxy = box.xyxy[0].tolist()  
-                    player_detections.append(xyxy)
-                    player_boxes.append({"coords": xyxy, "id": i})
-
+                xyxy = box.xyxy[0].tolist()
+        
+                if class_id in class_map:
+                    target_list, player_box_list = class_map[class_id]
+                    target_list.append(xyxy)
+        
+                    # Only add to player_boxes if it's a player detection
+                    if player_box_list is not None:
+                        player_box_list.append({"coords": xyxy, "id": i})
         # Assign teams
         self.team_assigner = TeamAssigner()
         self.team_assigner.assign_team_colour(input_image, player_detections)
@@ -66,15 +80,17 @@ class ImageProcessor:
             team_id = self.team_assigner.get_player_team(input_image, player['coords'], player_id=player['id'])
             player["team"] = team_id
             player["role"] = None  # Placeholder; roles will be updated during role assignment
-            print(f"PLAYER: {player}")
 
         # store for usage later on. 
         self.player_boxes = player_boxes
+        self.goalkeeper_results = goalkeeper_boxes
+        self.referee_results = referee_boxes
+        self.football_results = football_boxes
 
         # Visualise initial results, the empty strings represent the team roles and attack direction, which cannot be decided 
         # until the teams are categorised in attack and defense. 
         output_image = visualise_detections(
-            input_image, results, self.model, self.team_assigner, self.player_class_id, self.colour_map, "", "", ""
+            input_image, results, self.model, self.team_assigner, PLAYER_CLASS_ID, self.colour_map, "", "", ""
         )
 
         final_output_image, extracted_keypoints = visualise_keypoints(output_image, keypoint_results)

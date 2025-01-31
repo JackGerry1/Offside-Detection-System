@@ -5,6 +5,13 @@ import os
 CURRENT_DIR = os.getcwd()
 MODEL_PATH = f'{CURRENT_DIR}/models/YOLOV8N_BEST.pt'
 PITCH_MODEL_PATH = f'{CURRENT_DIR}/models/YOLOV8NPOSE500BEST.pt'
+
+# define class ids 
+FOOTBALL_CLASS_ID = 0
+GOALKEEPER_CLASS_ID = 1
+PLAYER_CLASS_ID = 2
+REFEREE_CLASS_ID = 3
+
 COLOUR_MAP = {
     "referee": (0, 0, 0),  # Black
     "football": (0, 165, 255),  # Orange
