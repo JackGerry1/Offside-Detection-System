@@ -4,7 +4,10 @@ from tkinter import filedialog, StringVar
 from PIL import Image, ImageTk
 import os
 import cv2
-from pitch_visualiser import display_player_data, display_keypoint_data, display_football_data, display_goalkeeper_data, display_referee_data
+from pitch_visualiser import pitch_display, display_keypoint_data, display_player_data, display_referee_data
+from position_transformer import PositionTransformer
+
+from coordinate_transformer import CoordinateTransformer
 # import utilities and other functions
 from image_processing.image_processor import ImageProcessor
 from visualisation.visualise import visualise_detections
@@ -12,6 +15,8 @@ from utils.utils import CURRENT_DIR, MODEL_PATH, PITCH_MODEL_PATH, COLOUR_MAP, P
 
 # Initialise ImageProcessor
 processor = ImageProcessor(MODEL_PATH, PITCH_MODEL_PATH, COLOUR_MAP)
+coordinate_transformer = CoordinateTransformer()
+position_transformer = PositionTransformer()
 
 class ImageApp:
     # GUI initialisation
@@ -227,7 +232,7 @@ class ImageApp:
         # detect coordinate of user's click. 
         x_click = int(event.x * scale_x)
         y_click = int(event.y * scale_y)
-
+        print(f"YOU CLICKED AT: {x_click}, {y_click}")
         # loop through all processed players and compare the user's click to their bounding boxes, 
         # If they click on a player it will highlight them. 
         for player in self.processed_players:  
@@ -279,23 +284,63 @@ class ImageApp:
     # pass data about keypoints and detected, refs, players, goalkeepers and footballs. 
     def pass_data(self): 
         """ Calls the pitch visualiser with processed player data and keypoints, only if data is available. """
-
-        if self.processed_players:
-            display_player_data(self.processed_players, self.team1_role_var.get(), self.team2_role_var.get())
+        transformed_footballs = None
+        transformed_goalkeepers = None
+        transformed_players = None
+        transformed_referees = None
+        new_football_coordinates = None
+        new_goalkeeper_coordinates = None
+        new_player_coordinates = None
+        new_referee_coordinates = None
 
         if processor.keypoint_results:
+            
             display_keypoint_data(processor.keypoint_results)
 
+            source_pts, valid_indices = position_transformer.normalise_keypoints(processor.keypoint_results)
+            H, _ = position_transformer.calculate_homography(source_pts, valid_indices)
+            
+            #print(f"HOMOGRAPHY: {H}")
+
+            # Transform keypoints using the homography matrix
+            transformed_points = position_transformer.transform_positions(H, source_pts.reshape(-1, 2))
+
+            print(f"TRANSFORMED KEYPOINTS: {transformed_points}")
+            
+
+        if self.processed_players:
+            transformed_players = coordinate_transformer.transform_player(processor.player_boxes)
+            print("PLAYER RESULTS: " + str(transformed_players))
+
+            new_player_coordinates = position_transformer.transform_positions(H, transformed_players)
+            print(f"NEW PLAYER COORDINATES: {new_player_coordinates}")
+
+
         if processor.referee_results:
-            display_referee_data(processor.referee_results)
+            transformed_referees = coordinate_transformer.transform_referee(processor.referee_results)
+            #print("REFEREE RESULTS: " + str(transformed_referees))
+
+            new_referee_coordinates = position_transformer.transform_positions(H, transformed_referees)
+            print(f"NEW REFEREE COORDINATES: {new_referee_coordinates}")
 
         if processor.goalkeeper_results:
-            display_goalkeeper_data(processor.goalkeeper_results)
+            transformed_goalkeepers = coordinate_transformer.transform_goalkeeper(processor.goalkeeper_results)
+            #print("GOALKEEPER RESULTS: " + str(transformed_goalkeepers))
+
+            new_goalkeeper_coordinates = position_transformer.transform_positions(H, transformed_goalkeepers)
+            print(f"NEW GOALKEEPER COORDINATES: {new_goalkeeper_coordinates}")
 
         if processor.football_results:
-            display_football_data(processor.football_results)
+            transformed_footballs = coordinate_transformer.transform_football(processor.football_results)
+            #print("FOOTBALL RESULTS: " + str(transformed_footballs)) 
+
+            new_football_coordinates = position_transformer.transform_positions(H, transformed_footballs)
+            print(f"NEW FOOTBALL COORDINATES: {new_football_coordinates}")
+
+        pitch_display(new_player_coordinates, new_referee_coordinates, new_goalkeeper_coordinates, new_football_coordinates, transformed_points) 
 
 
+        
         
 # Run the GUI
 if __name__ == "__main__":

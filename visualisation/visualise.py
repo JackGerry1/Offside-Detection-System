@@ -81,7 +81,7 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
 
     # for all results, extract information about boxes, masks and classes. 
     for r in results:
-        masks = r.masks.data.cpu().numpy() 
+        #masks = r.masks.data.cpu().numpy() 
         for i, box in enumerate(r.boxes): 
 
             # extract coordinates, class name and confidence values for all detections.  
@@ -124,16 +124,16 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
             cv2.putText(output_image, label2, (x_min, label_y2), cv2.FONT_HERSHEY_SIMPLEX, font_scale, text_colour, thickness)
             
             # Apply segmentation mask if available
-            mask = masks[i]
-            mask = cv2.resize(mask, (input_image.shape[1], input_image.shape[0]))
-            mask = (mask > 0.5).astype(np.uint8)
-            coloured_mask = np.zeros_like(input_image, dtype=np.uint8)
-            coloured_mask[:, :, 0] = colour_bgr[0] # Red channel
-            coloured_mask[:, :, 1] = colour_bgr[1] # Green Channel
-            coloured_mask[:, :, 2] = colour_bgr[2] # Blue Channel
+            #mask = masks[i]
+            #mask = cv2.resize(mask, (input_image.shape[1], input_image.shape[0]))
+            #mask = (mask > 0.5).astype(np.uint8)
+            #coloured_mask = np.zeros_like(input_image, dtype=np.uint8)
+            #coloured_mask[:, :, 0] = colour_bgr[0] # Red channel
+            #coloured_mask[:, :, 1] = colour_bgr[1] # Green Channel
+            #coloured_mask[:, :, 2] = colour_bgr[2] # Blue Channel
 
             # apply masks to final output image.
-            output_image = cv2.addWeighted(output_image, 1.0, coloured_mask * mask[:, :, None], 0.5, 0)
+            #output_image = cv2.addWeighted(output_image, 1.0, coloured_mask * mask[:, :, None], 0.5, 0)
 
     # if the user has created custom player highlights assign them to 
     # furthest forward attacker and furthest back defender, else the system will predict them. 
@@ -176,9 +176,9 @@ def visualise_keypoints(saved_image, keypoint_results):
             for kp_set in keypoints:
                 for kp in kp_set:
                     x, y, conf = kp
+
                     keypoints_data.append(kp)
                     if conf > 0.5:  # Only render keypoints with confidence > 0.5
                         cv2.circle(output_image, (int(x), int(y)), 5, (0, 255, 255), -1)
-                        
     
     return output_image, keypoints_data
