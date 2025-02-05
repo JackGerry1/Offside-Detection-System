@@ -46,9 +46,15 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
         ax.scatter(transformed_points[:, 0], transformed_points[:, 1], color='pink', s=100, edgecolors='black', zorder=4, label='Transformed Points')
 
     # Plot transformed players if available
+    # Plot transformed players with dynamic colors
     if players is not None:
-        ax.scatter(players[:, 0], players[:, 1], color='blue', s=100, edgecolors='black', label='Players')
-
+        player_positions = players[:, :2]  # Extract x and y positions
+        player_colours = players[:, 2:5] / 255
+        player_colours = np.flip(player_colours)
+        
+        # Scatter plot with dynamic colors
+        ax.scatter(player_positions[:, 0], player_positions[:, 1], color=player_colours, s=100, edgecolors='black', label='Players')
+    
     # Plot transformed referees if available
     if referees is not None:
         ax.scatter(referees[:, 0], referees[:, 1], color='red', s=100, edgecolors='black', label='Referees')

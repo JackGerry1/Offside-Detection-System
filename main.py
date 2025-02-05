@@ -6,7 +6,7 @@ import os
 import cv2
 from pitch_visualiser import pitch_display, display_keypoint_data, display_player_data, display_referee_data
 from position_transformer import PositionTransformer
-
+import numpy as np
 from coordinate_transformer import CoordinateTransformer
 # import utilities and other functions
 from image_processing.image_processor import ImageProcessor
@@ -182,7 +182,7 @@ class ImageApp:
         if self.result_image_path:
 
             # update the visualised image with the corresponding team labels and attack direction. 
-            updated_image = visualise_detections(
+            updated_image, _ = visualise_detections(
                 cv2.imread(self.result_image_path),
                 results,
                 processor.model,
@@ -266,7 +266,7 @@ class ImageApp:
 
         # update the visualisation with the newly highlighted player, while maintaing all information from previous visualisations.  
         if self.result_image_path:
-            output_image = visualise_detections(
+            output_image, _ = visualise_detections(
                 cv2.imread(self.result_image_path),
                 results,
                 processor.model,
@@ -292,7 +292,7 @@ class ImageApp:
         new_goalkeeper_coordinates = None
         new_player_coordinates = None
         new_referee_coordinates = None
-
+        
         if processor.keypoint_results:
             
             display_keypoint_data(processor.keypoint_results)
@@ -307,14 +307,25 @@ class ImageApp:
 
             print(f"TRANSFORMED KEYPOINTS: {transformed_points}")
             
-
         if self.processed_players:
-            transformed_players = coordinate_transformer.transform_player(processor.player_boxes)
-            print("PLAYER RESULTS: " + str(transformed_players))
-
+            display_player_data(self.processed_players, self.team1_role_var.get(), self.team2_role_var.get())
+            
+            # Transform player coordinates
+            transformed_players = coordinate_transformer.transform_player(self.processed_players)
+            
+            # Transform positions (apply new transformation to the player coordinates)
             new_player_coordinates = position_transformer.transform_positions(H, transformed_players)
-            print(f"NEW PLAYER COORDINATES: {new_player_coordinates}")
-
+            
+            # Append team_colour to each player's transformed coordinates
+            new_player_coordinates_with_colour = [
+                np.append(new_coordinates, player['team_colour'])
+                for new_coordinates, player in zip(new_player_coordinates, self.processed_players)
+            ]
+            
+            # Convert the list to a NumPy array
+            new_player_coordinates_with_colour = np.array(new_player_coordinates_with_colour)
+            
+            print(f"NEW PLAYER COORDINATES WITH COLOUR: {new_player_coordinates_with_colour}")
 
         if processor.referee_results:
             transformed_referees = coordinate_transformer.transform_referee(processor.referee_results)
@@ -337,7 +348,7 @@ class ImageApp:
             new_football_coordinates = position_transformer.transform_positions(H, transformed_footballs)
             print(f"NEW FOOTBALL COORDINATES: {new_football_coordinates}")
 
-        pitch_display(new_player_coordinates, new_referee_coordinates, new_goalkeeper_coordinates, new_football_coordinates, transformed_points) 
+        pitch_display(new_player_coordinates_with_colour, new_referee_coordinates, new_goalkeeper_coordinates, new_football_coordinates, transformed_points) 
 
 
         

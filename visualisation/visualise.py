@@ -97,7 +97,7 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
                 team_id = team_assigner.get_player_team(input_image, xyxy, player_id=i)
                 role = team1_role if team_id == 1 else team2_role
                 colour_bgr = team_assigner.team_colours[team_id]
-                player_boxes.append({"coords": xyxy, "team": team_id, "role": role, "index": i})
+                player_boxes.append({"coords": xyxy, "team": team_id, "role": role, "index": i, "team_colour": colour_bgr})
 
             # assign other classes colours based on colour map.  
             else:
@@ -156,14 +156,15 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
     #        print(f"OG Label: {label} - Player Info: Coords={extreme_player['coords']}, Team={extreme_player['team']}, Role={extreme_player['role']}")
     #        
     #        draw_bounding_box_with_label(output_image, extreme_player["coords"], colour, label)
-
+    
+    #print(f"PLAYER BOXES: {player_boxes}")
     # Add attack direction indicator
     if attack_direction:
         h, _, _ = output_image.shape
         direction_text = f"Attack Direction: {attack_direction.capitalize()}"
         cv2.putText(output_image, direction_text, (50, h - 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
 
-    return output_image
+    return output_image, player_boxes
 
 def visualise_keypoints(saved_image, keypoint_results):
     output_image = saved_image.copy()
