@@ -6,7 +6,6 @@ import os
 import cv2
 from pitch_visualiser import pitch_display, display_keypoint_data, display_player_data, display_referee_data
 from position_transformer import PositionTransformer
-import numpy as np
 from coordinate_transformer import CoordinateTransformer
 # import utilities and other functions
 from image_processing.image_processor import ImageProcessor
@@ -317,13 +316,7 @@ class ImageApp:
             new_player_coordinates = position_transformer.transform_positions(H, transformed_players)
             
             # Append team_colour to each player's transformed coordinates
-            new_player_coordinates_with_colour = [
-                np.append(new_coordinates, player['team_colour'])
-                for new_coordinates, player in zip(new_player_coordinates, self.processed_players)
-            ]
-            
-            # Convert the list to a NumPy array
-            new_player_coordinates_with_colour = np.array(new_player_coordinates_with_colour)
+            new_player_coordinates_with_colour = coordinate_transformer.append_team_colour_to_coordinates(new_player_coordinates, self.processed_players) 
             
             print(f"NEW PLAYER COORDINATES WITH COLOUR: {new_player_coordinates_with_colour}")
 
