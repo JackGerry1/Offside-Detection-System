@@ -35,10 +35,10 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
     # Create figure
     _, ax = pitch.draw(figsize=(10, 6))
 
+    ref_colour = np.flip(np.array(COLOUR_MAP["referee"]) / 255)
+    football_colour = np.flip(np.array(COLOUR_MAP["football"]) / 255)
+    goalkeeper_colour = np.flip(np.array(COLOUR_MAP["goalkeeper"]) / 255)
 
-    print(COLOUR_MAP["referee"])
-    print(COLOUR_MAP["football"])
-    print(COLOUR_MAP["goalkeeper"])
     # Reverse the y-axis so that (0,0) is at the top-left
     ax.invert_yaxis()
     
@@ -46,8 +46,8 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
     #ax.scatter(CONFIG_VERTICES[:, 0], CONFIG_VERTICES[:, 1], color='yellow', s=150, edgecolors='black', zorder=3, label='Pitch Markers')
 
     # Plot transformed points if available
-    if transformed_points is not None and transformed_points.size > 0.1:
-        ax.scatter(transformed_points[:, 0], transformed_points[:, 1], color='yellow', s=100, edgecolors='black', zorder=4, label='Transformed Points')
+    #if transformed_points is not None and transformed_points.size > 0.1:
+    #    ax.scatter(transformed_points[:, 0], transformed_points[:, 1], color='yellow', s=100, edgecolors='black', zorder=4, label='Transformed Points')
 
     # Plot transformed players with dynamic colors
     if players is not None:
@@ -59,15 +59,15 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
 
     # Plot transformed referees if available
     if referees is not None:
-        ax.scatter(referees[:, 0], referees[:, 1], color='black', s=100, edgecolors='black', label='Referees')
+        ax.scatter(referees[:, 0], referees[:, 1], color=ref_colour, s=100, edgecolors='black', label='Referees')
 
     # Plot transformed goalkeepers if available
     if goalkeepers is not None:
-        ax.scatter(goalkeepers[:, 0], goalkeepers[:, 1], color='pink', s=100, edgecolors='black', label='Goalkeepers')
+        ax.scatter(goalkeepers[:, 0], goalkeepers[:, 1], color=goalkeeper_colour, s=100, edgecolors='black', label='Goalkeepers')
 
     # Plot transformed footballs if available
     if footballs is not None:
-        ax.scatter(footballs[:, 0], footballs[:, 1], color='white', s=100, edgecolors='black', label='Football')
+        ax.scatter(footballs[:, 0], footballs[:, 1], color=football_colour, s=100, edgecolors='black', label='Football')
 
     plt.show()
 
