@@ -47,24 +47,23 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
 
     # Plot transformed points if available
     if transformed_points is not None and transformed_points.size > 0.1:
-        ax.scatter(transformed_points[:, 0], transformed_points[:, 1], color='pink', s=100, edgecolors='black', zorder=4, label='Transformed Points')
+        ax.scatter(transformed_points[:, 0], transformed_points[:, 1], color='yellow', s=100, edgecolors='black', zorder=4, label='Transformed Points')
 
-    # Plot transformed players if available
     # Plot transformed players with dynamic colors
     if players is not None:
         player_positions = players[:, :2]  # Extract x and y positions
         player_colours = players[:, 2:5] / 255
         
         # Scatter plot with dynamic colors
-       # ax.scatter(player_positions[:, 0], player_positions[:, 1], color=player_colours, s=100, edgecolors='black', label='Players')
         ax.scatter(player_positions[:, 0], player_positions[:, 1], color=player_colours, s=100, edgecolors='black', label='Players') 
+
     # Plot transformed referees if available
     if referees is not None:
         ax.scatter(referees[:, 0], referees[:, 1], color='black', s=100, edgecolors='black', label='Referees')
 
     # Plot transformed goalkeepers if available
     if goalkeepers is not None:
-        ax.scatter(goalkeepers[:, 0], goalkeepers[:, 1], color='yellow', s=100, edgecolors='black', label='Goalkeepers')
+        ax.scatter(goalkeepers[:, 0], goalkeepers[:, 1], color='pink', s=100, edgecolors='black', label='Goalkeepers')
 
     # Plot transformed footballs if available
     if footballs is not None:

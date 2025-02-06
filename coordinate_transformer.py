@@ -6,7 +6,7 @@ class CoordinateTransformer:
         self.transformed_coordinates = []
         self.image_size = 640
 
-    def transform_coordinates(self, x_min, y_min, x_max, y_max):
+    def transform_coordinates(self, x_min, _, x_max, y_max):
         x_center = (x_min + x_max) / 2
        # y_center = (y_min + y_max) / 2
         y_center = y_max 

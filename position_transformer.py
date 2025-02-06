@@ -1,8 +1,10 @@
 import numpy as np
 import cv2
-from utils.utils import CONFIG_VERTICES
+from utils.utils import CONFIG_VERTICES, PITCH_WIDTH, PITCH_LENGTH
 
 class PositionTransformer:
+    def __init__(self):
+        self.image_size = 640
     def normalise_keypoints(self, keypoints):
         """
         Normalises keypoints from the source image (640x640) 
@@ -16,8 +18,8 @@ class PositionTransformer:
         
         for i, (x, y, conf) in enumerate(keypoints):
             if conf > 0.5:  # Keep only high-confidence keypoints
-                x_normalised = x * (110 / 640)  # Scale x-coordinate
-                y_normalised = y * (69 / 640)  # Flip Y and scale to match pitch
+                x_normalised = x * (PITCH_LENGTH / self.image_size)  # Scale x-coordinate
+                y_normalised = y * (PITCH_WIDTH / self.image_size)  # Flip Y and scale to match pitch
                 source_pts.append([x_normalised, y_normalised])
                 valid_indices.append(i)  # Store the index of the valid keypoint
 
