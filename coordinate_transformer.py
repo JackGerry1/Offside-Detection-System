@@ -16,7 +16,7 @@ class CoordinateTransformer:
         return np.array([x_normalised, y_normalised])  # Ensure a NumPy array output
     
 
-    def append_team_colour_to_coordinates(self, new_player_coordinates, processed_players):
+    def append_team_colour_and_role_to_coordinates(self, new_player_coordinates, processed_players):
         """
         Appends the flipped team color to each player's new coordinates and returns as a NumPy array.
 
@@ -28,13 +28,13 @@ class CoordinateTransformer:
         Returns:
         numpy.ndarray: A NumPy array of coordinates with the flipped team color appended.
         """
-        new_player_coordinates_with_colour = [
-            np.append(new_coordinates, np.flip(player['team_colour']))
+        new_player_coordinates_with_colour_and_role = [
+            np.append(np.append(new_coordinates, np.flip(player['team_colour'])), player['role'])
             for new_coordinates, player in zip(new_player_coordinates, processed_players)
         ]
-    
+        
         # Convert the list to a NumPy array and return it
-        return np.array(new_player_coordinates_with_colour)
+        return np.array(new_player_coordinates_with_colour_and_role)
         
     def transform_player(self, players):
         transformed_players = [self.transform_coordinates(*player['coords']) for player in players]

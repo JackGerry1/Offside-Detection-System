@@ -316,9 +316,9 @@ class ImageApp:
             new_player_coordinates = position_transformer.transform_positions(H, transformed_players)
             
             # Append team_colour to each player's transformed coordinates
-            new_player_coordinates_with_colour = coordinate_transformer.append_team_colour_to_coordinates(new_player_coordinates, self.processed_players) 
+            new_player_coordinates_with_colour_and_role = coordinate_transformer.append_team_colour_and_role_to_coordinates(new_player_coordinates, self.processed_players) 
             
-            print(f"NEW PLAYER COORDINATES WITH COLOUR: {new_player_coordinates_with_colour}")
+            print(f"NEW PLAYER COORDINATES WITH COLOUR: {new_player_coordinates_with_colour_and_role}")
 
         if processor.referee_results:
             transformed_referees = coordinate_transformer.transform_referee(processor.referee_results)
@@ -341,7 +341,7 @@ class ImageApp:
             new_football_coordinates = position_transformer.transform_positions(H, transformed_footballs)
             print(f"NEW FOOTBALL COORDINATES: {new_football_coordinates}")
 
-        pitch_display(new_player_coordinates_with_colour, new_referee_coordinates, new_goalkeeper_coordinates, new_football_coordinates, transformed_points) 
+        pitch_display(new_player_coordinates_with_colour_and_role, new_referee_coordinates, new_goalkeeper_coordinates, new_football_coordinates, transformed_points, self.attack_direction_var.get()) 
 
 
         
