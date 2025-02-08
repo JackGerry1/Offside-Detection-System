@@ -17,8 +17,8 @@ PITCH_WIDTH = 69
 PITCH_LENGTH = 110
 
 COLOUR_MAP = {
-    "referee": (0, 0, 0),  # Black
-    "football": (0, 165, 255),  # Orange
+    "referee": (0, 215, 255),  # Bright Gold
+    "football": (255, 255, 255),  # White
     "goalkeeper": (255, 105, 180),  # Pink
 }
 

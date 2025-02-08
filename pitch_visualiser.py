@@ -55,21 +55,35 @@ def find_relevant_players(players, attack_direction):
             max_defend_x = pos_value
             back_player = (x, y)
             
-    return forward_player, back_player     
+    return np.float32(forward_player), np.float32(back_player)     
+
+
+def check_offside(forward_player, back_player, attack_direction):
+    """
+    Determines if the attacker is offside.
+    Returns the color (red for offside, green for onside).
+    """
+
+    direction_multiplier = 1 if attack_direction.lower() == "right" else -1
+    is_offside = (direction_multiplier * forward_player[0]) > (direction_multiplier * back_player[0])
+    
+    # red or light green
+    return '#FF0000' if is_offside else '#00FF00'
 
 def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None, transformed_points=None, attack_direction=None): 
     # Initialise pitch with updated dimensions
     pitch = Pitch(pitch_type='custom', pitch_width=PITCH_WIDTH, pitch_length=PITCH_LENGTH, 
-                  goal_type='box', linewidth=2, line_color='white', pitch_color='green')
+                  goal_type='box', linewidth=2, line_color='#E0E0E0', pitch_color='#1A1A1D')
     print(f"pitch visualiser attack direction: {attack_direction}")
     print(f"pitch visualiser player: {players}")
     # Create figure
-    _, ax = pitch.draw(figsize=(10, 6))
+    fig, ax = pitch.draw(figsize=(10, 6))
 
     ref_colour = np.flip(np.array(COLOUR_MAP["referee"]) / 255)
     football_colour = np.flip(np.array(COLOUR_MAP["football"]) / 255)
     goalkeeper_colour = np.flip(np.array(COLOUR_MAP["goalkeeper"]) / 255)
-
+    marker_size = 100
+    
     # Reverse the y-axis so that (0,0) is at the top-left
     ax.invert_yaxis()
     
@@ -85,34 +99,39 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
         player_positions = np.float32(players[:, :2])
         player_colours = np.float32(players[:, 2:5]) / 255
         
-        # Find extreme players
         forward_player, back_player = find_relevant_players(players, attack_direction)
-
-        forward_player = np.float32(forward_player)
-        back_player = np.float32(back_player)
-
-        # Plot base player points
-        ax.scatter(player_positions[:, 0], player_positions[:, 1], 
-                  color=player_colours, s=100, edgecolors='black', label='Players')
+        attacker_colour = check_offside(forward_player, back_player, attack_direction)
         
-        # Add highlight circles
-        if forward_player is not None:
-            ax.scatter(forward_player[0], forward_player[1], color='#FFFF00', s=100, edgecolors='white')
-            
-        if back_player is not None:
-            ax.scatter(back_player[0], back_player[1], color='#FF0000', s=100, edgecolors='white')
+        ax.scatter(player_positions[:, 0], player_positions[:, 1], color=player_colours, s=marker_size, edgecolors='white')
+
+        # Circle size and offset calculations
+        circle_radius = np.sqrt(marker_size / np.pi) * (PITCH_LENGTH / fig.dpi / 6)
+        
+        # Determine side to offset based on attack direction
+        direction_multiplier = 1 if attack_direction.lower() == "right" else -1
+        line_defender = back_player[0] + (direction_multiplier * circle_radius)
+        line_attacker = forward_player[0] + (direction_multiplier * circle_radius)
+
+        # Draw tangent line
+        ax.plot([line_defender, line_defender], [0, PITCH_WIDTH], color='blue', linewidth=1)
+        ax.plot([line_attacker, line_attacker], [0, PITCH_WIDTH], color=attacker_colour, linewidth=1)
+
+        ax.scatter(forward_player[0], forward_player[1], color=attacker_colour, s=marker_size, edgecolors='white')
+
+        ax.scatter(back_player[0], back_player[1], color='blue', s=marker_size, edgecolors='white')
+
 
     # Plot transformed referees if available
     if referees is not None:
-        ax.scatter(referees[:, 0], referees[:, 1], color=ref_colour, s=100, edgecolors='black', label='Referees')
+        ax.scatter(referees[:, 0], referees[:, 1], color=ref_colour, s=marker_size, edgecolors='white', label='Referees')
 
     # Plot transformed goalkeepers if available
     if goalkeepers is not None:
-        ax.scatter(goalkeepers[:, 0], goalkeepers[:, 1], color=goalkeeper_colour, s=100, edgecolors='black', label='Goalkeepers')
+        ax.scatter(goalkeepers[:, 0], goalkeepers[:, 1], color=goalkeeper_colour, s=marker_size, edgecolors='white', label='Goalkeepers')
 
     # Plot transformed footballs if available
     if footballs is not None:
-        ax.scatter(footballs[:, 0], footballs[:, 1], color=football_colour, s=100, edgecolors='black', label='Football')
+        ax.scatter(footballs[:, 0], footballs[:, 1], color=football_colour, s=marker_size, edgecolors='white', label='Football')
 
     plt.show()
 

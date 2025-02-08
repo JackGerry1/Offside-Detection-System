@@ -111,6 +111,10 @@ class ImageApp:
         if file_path:
             self.uploaded_image_path = file_path
             img = Image.open(file_path)
+            
+            # Resize the image to 640x640
+            img = img.resize((640, 640))
+            
             img_tk = ImageTk.PhotoImage(img)
             self.image_label.config(image=img_tk)
             self.image_label.image = img_tk
@@ -132,6 +136,10 @@ class ImageApp:
 
         # show the updated image on the GUI. 
         updated_img = Image.open(updated_path)
+
+        # Resize the image to 640x640
+        updated_img = updated_img.resize((640, 640))
+        
         updated_img_tk = ImageTk.PhotoImage(updated_img)
         self.image_label.config(image=updated_img_tk)
         self.image_label.image = updated_img_tk
@@ -158,6 +166,9 @@ class ImageApp:
             # show the resulting image on the GUI. 
             self.result_image_path = result_path
             result_img = Image.open(result_path)
+
+            # Resize the image to 640x640
+            result_img = result_img.resize((640, 640))
             result_img_tk = ImageTk.PhotoImage(result_img)
             self.image_label.config(image=result_img_tk)
             self.image_label.image = result_img_tk
