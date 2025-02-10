@@ -5,28 +5,28 @@ from ultralytics import YOLO
 CURRENT_DIR = os.getcwd()
 
 # Define the image directories
-image_directory_segmentation = f'{CURRENT_DIR}/general_segmentation_images/'
-image_directory_keypoints = f'{CURRENT_DIR}/general_keypoints_images/'
+image_directory_keypoints = f'{CURRENT_DIR}/football-field-detection-v1/test/images/'
+image_directory_players = f'{CURRENT_DIR}/football-players-detection-1/test/images/'
 
 # Define the save directories
-save_directory_segmentation = f'{CURRENT_DIR}/general_predictions/'
-save_directory_keypoints = f'{CURRENT_DIR}/general_keypoints_predictions/'
+save_directory_keypoints = f'{CURRENT_DIR}/keypoint_predictions/'
+save_directory = f'{CURRENT_DIR}/player_referee_football_goalkeeper_predictions/'
 
 # Paths to models
-segmentation_model_path = f'{CURRENT_DIR}/models/YOLOV8N_BEST.pt'
+model_path = f'{CURRENT_DIR}/models/YOLOV8N_BEST.pt'
 keypoints_model_path = f'{CURRENT_DIR}/models/YOLOV8NPOSE500BEST.pt'
 
-# Segmentation with pretrained model
-model_segmentation = YOLO(segmentation_model_path)
+# Player, Referee, Football and Goalkeeper detection with pretrained model
+modal = YOLO(model_path)
 
 # Create the save directory if it doesn't exist
-os.makedirs(save_directory_segmentation, exist_ok=True)
+os.makedirs(save_directory, exist_ok=True)
 
 ### Test On Multiple Images ###
-results_segmentation = model_segmentation(
-    source=image_directory_segmentation,
+results_segmentation = modal(
+    source=image_directory_players,
     save=True,
-    project=save_directory_segmentation,
+    project=save_directory,
     name='.',  # Prevents creation of subfolders
     exist_ok=True  # Allows saving in an existing directory
 )

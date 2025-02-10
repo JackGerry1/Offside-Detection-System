@@ -11,17 +11,11 @@ roboflow_api_key = os.getenv("ROBOFLOW_API_KEY")
 
 # Use the API key in the Roboflow client to download the football, player, referee and goalkeeper training dataset
 rf = Roboflow(api_key=roboflow_api_key)
-project = rf.workspace("workspace1-8owu3").project("football-players-yjzti")
-version = project.version(6)
-dataset = version.download("yolov8")
-
-# download the football pitch keypoint dataset
-project = rf.workspace("workspace1-8owu3").project("football-field-detection-f07vi-x92hn")
+project = rf.workspace("workspace1-8owu3").project("football-players-detection-3zvbc-bf79d")
 version = project.version(1)
 dataset = version.download("yolov8")
 
-
-
+# download the football pitch keypoint dataset
 project = rf.workspace("workspace1-8owu3").project("football-field-detection-f07vi-iqfrt")
 version = project.version(1)
 dataset = version.download("yolov8")

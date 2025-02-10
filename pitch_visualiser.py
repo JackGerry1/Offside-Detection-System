@@ -39,7 +39,7 @@ def find_relevant_players(players, attack_direction):
     forward_player = None
     back_player = None
     
-    for idx, player in enumerate(players):
+    for player in players:
         x = float(player[0])
         y = float(player[1])
         role = player[5]

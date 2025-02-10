@@ -7,6 +7,7 @@ Available at: https://github.com/abdullahtarek/football_analysis/blob/main/team_
 
 import numpy as np
 from sklearn.cluster import KMeans
+import cv2 
 
 class TeamAssigner:
     def __init__(self):
@@ -37,9 +38,13 @@ class TeamAssigner:
         # Extract the bounding box region from the image
         x_min, y_min, x_max, y_max = map(int, bbox)
         image = image[y_min:y_max, x_min:x_max]
-
+        
+        # resize the image for consistency
+        image_resized = cv2.resize(image, (64, 64))
+        
         # Focus on the top half of the resized bounding box for jersey colour
-        top_half_image = image[:image.shape[0] // 2, :]
+        top_half_image = image_resized[:image_resized.shape[0] // 2, :]
+        print(top_half_image.shape)
 
         # Get clustering model
         kmeans = self.get_clustering_model(top_half_image)

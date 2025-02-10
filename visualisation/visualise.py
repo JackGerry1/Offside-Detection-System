@@ -78,7 +78,8 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
     # initialise output image and empty player_boxes array. 
     output_image = input_image.copy()
     player_boxes = []
-
+    team_id = None
+    role = None
     # for all results, extract information about boxes, masks and classes. 
     for r in results:
         #masks = r.masks.data.cpu().numpy() 

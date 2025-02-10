@@ -5,7 +5,7 @@ import numpy as np
 # Define paths and colour map
 CURRENT_DIR = os.getcwd()
 MODEL_PATH = f'{CURRENT_DIR}/models/YOLOV8N_BEST.pt'
-PITCH_MODEL_PATH = f'{CURRENT_DIR}/models/YOLOV8NPOSE500BESTV2.pt'
+PITCH_MODEL_PATH = f'{CURRENT_DIR}/models/YOLOV8NPOSE500BEST.pt'
 
 # define class ids 
 FOOTBALL_CLASS_ID = 0
