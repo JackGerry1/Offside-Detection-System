@@ -4,7 +4,7 @@ from tkinter import filedialog, StringVar
 from PIL import Image, ImageTk
 import os
 import cv2
-from pitch_visualiser import pitch_display, display_keypoint_data, display_player_data, display_referee_data
+from pitch_visualiser import pitch_display
 from position_transformer import PositionTransformer
 from coordinate_transformer import CoordinateTransformer
 # import utilities and other functions
@@ -52,7 +52,6 @@ class ImageApp:
         # Image label with mouse1 onclick functionality
         self.image_label = tk.Label(self.root)
         self.image_label.pack()
-        self.image_label.bind("<Button-1>", self.on_image_click)
         
         # Role assignment drop down menu for team role and attack direction.
         self.assign_roles_frame = tk.Frame(self.root)
@@ -83,15 +82,9 @@ class ImageApp:
 
         self.assign_roles_frame.pack_forget()
 
-        # User choice for highlight type
-        #self.highlight_choice_var = StringVar(value="Attacker")
-        #highlight_label = tk.Label(self.assign_roles_frame, text="Highlight Type:")
-        #highlight_label.grid(row=4, column=0, padx=5, pady=5)
-        #highlight_menu = tk.OptionMenu(self.assign_roles_frame, self.highlight_choice_var, "Attacker", "Defender")
-        #highlight_menu.grid(row=4, column=1, padx=5, pady=5)
 
         # Create Visualize Pitch button but hide it initially
-        self.visualize_pitch_button = tk.Button(self.root, text="Visualize Pitch", command=self.pass_data)
+        self.visualize_pitch_button = tk.Button(self.root, text="Detect Offside", command=self.pass_data)
         self.visualize_pitch_button.pack()
         self.visualize_pitch_button.pack_forget() 
 
@@ -209,88 +202,6 @@ class ImageApp:
             # **Show the "Visualize Pitch" button after roles are assigned**
             self.visualize_pitch_button.pack(pady=0)
             
-
-    def on_image_click(self, event):
-        """
-        Detects when a user clicks on the image, verifying if they have clicked on a player.   
-
-        Args:
-            event: When the user presses Mouse1 
-        
-        References: 
-            Leekha, G. (2023). How to find tags near to mouse click in Tkinter Python GUI? [online] Tutorialspoint.com. 
-            Available at: https://www.tutorialspoint.com/how-to-find-tags-near-to-mouse-click-in-tkinter-python-gui [Accessed 16 Jan. 2025].
-        
-        Output: Highlighted Box around the player that the user clicked, using styling from the highlight_player function. 
-        """
-        
-        # check if there is an image or players detected. 
-        if not self.result_image_path or not self.processed_players:
-            print("No players to select.")
-            return
-
-        # obtain image and label, width and height. 
-        # img width and height is 640
-        # label width and height is 644, so just a bit of padding around the image.  
-        img_width, img_height = Image.open(self.result_image_path).size
-        label_width, label_height = self.image_label.winfo_width(), self.image_label.winfo_height()
-
-        # get scale value for x and y
-        scale_x = img_width / label_width
-        scale_y = img_height / label_height
-
-        # detect coordinate of user's click. 
-        x_click = int(event.x * scale_x)
-        y_click = int(event.y * scale_y)
-        print(f"YOU CLICKED AT: {x_click}, {y_click}")
-        # loop through all processed players and compare the user's click to their bounding boxes, 
-        # If they click on a player it will highlight them. 
-        for player in self.processed_players:  
-            x_min, y_min, x_max, y_max = map(int, player["coords"])
-            if x_min <= x_click <= x_max and y_min <= y_click <= y_max:
-                self.highlight_player(player)
-                break
-        else:
-            print("No player clicked.")
-
-
-    def highlight_player(self, player):
-        """
-        Highlights the player, which the user clicked and draws a bounding box around them.  
-
-        Args:
-            player: the player's information, such as coordinate and team, which the user has clicked on. 
-        
-        Output: Highlighted Box around the player that the user clicked, alongside a corresponding label. 
-        """ 
-
-        # obtoain highlight choices, assign highlight_key and get results about the image. 
-        highlight_choice = self.highlight_choice_var.get()
-        highlight_key = "FA" if highlight_choice == "Attacker" else "FBD"
-        results = processor.processed_results
-
-        # apply the custom highlight to the obtained player.  
-        self.custom_highlights[highlight_key] = player
-        
-        print(f"Custom {highlight_key} updated: {player}")  
-
-        # update the visualisation with the newly highlighted player, while maintaing all information from previous visualisations.  
-        if self.result_image_path:
-            output_image, _ = visualise_detections(
-                cv2.imread(self.result_image_path),
-                results,
-                processor.model,
-                processor.team_assigner,
-                PLAYER_CLASS_ID,
-                processor.colour_map,
-                self.team1_role_var.get(),
-                self.team2_role_var.get(),
-                self.attack_direction_var.get(),
-                custom_highlights=self.custom_highlights
-            )
-
-            self.update_image(output_image)
-    
     # pass data about keypoints and detected, refs, players, goalkeepers and footballs. 
     def pass_data(self): 
         """ Calls the pitch visualiser with processed player data and keypoints, only if data is available. """
@@ -302,24 +213,18 @@ class ImageApp:
         new_goalkeeper_coordinates = None
         new_player_coordinates = None
         new_referee_coordinates = None
-        
+
         if processor.keypoint_results:
             
-            display_keypoint_data(processor.keypoint_results)
-
             source_pts, valid_indices = position_transformer.normalise_keypoints(processor.keypoint_results)
             H, _ = position_transformer.calculate_homography(source_pts, valid_indices)
             
-            #print(f"HOMOGRAPHY: {H}")
-
             # Transform keypoints using the homography matrix
             transformed_points = position_transformer.transform_positions(H, source_pts.reshape(-1, 2))
 
             print(f"TRANSFORMED KEYPOINTS: {transformed_points}")
             
         if self.processed_players:
-            display_player_data(self.processed_players, self.team1_role_var.get(), self.team2_role_var.get())
-            
             # Transform player coordinates
             transformed_players = coordinate_transformer.transform_player(self.processed_players)
             
@@ -327,27 +232,24 @@ class ImageApp:
             new_player_coordinates = position_transformer.transform_positions(H, transformed_players)
             
             # Append team_colour to each player's transformed coordinates
-            new_player_coordinates_with_colour_and_role = coordinate_transformer.append_team_colour_and_role_to_coordinates(new_player_coordinates, self.processed_players) 
+            new_player_coordinates_with_colour_and_role = coordinate_transformer.assign_roles_and_append_team_colour(new_player_coordinates, self.processed_players, self.team1_role_var.get(), self.team2_role_var.get()) 
             
             print(f"NEW PLAYER COORDINATES WITH COLOUR: {new_player_coordinates_with_colour_and_role}")
 
         if processor.referee_results:
             transformed_referees = coordinate_transformer.transform_referee(processor.referee_results)
-            #print("REFEREE RESULTS: " + str(transformed_referees))
 
             new_referee_coordinates = position_transformer.transform_positions(H, transformed_referees)
             print(f"NEW REFEREE COORDINATES: {new_referee_coordinates}")
 
         if processor.goalkeeper_results:
             transformed_goalkeepers = coordinate_transformer.transform_goalkeeper(processor.goalkeeper_results)
-            #print("GOALKEEPER RESULTS: " + str(transformed_goalkeepers))
 
             new_goalkeeper_coordinates = position_transformer.transform_positions(H, transformed_goalkeepers)
             print(f"NEW GOALKEEPER COORDINATES: {new_goalkeeper_coordinates}")
 
         if processor.football_results:
             transformed_footballs = coordinate_transformer.transform_football(processor.football_results)
-            #print("FOOTBALL RESULTS: " + str(transformed_footballs)) 
 
             new_football_coordinates = position_transformer.transform_positions(H, transformed_footballs)
             print(f"NEW FOOTBALL COORDINATES: {new_football_coordinates}")

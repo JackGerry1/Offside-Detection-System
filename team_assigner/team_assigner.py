@@ -44,7 +44,6 @@ class TeamAssigner:
         
         # Focus on the top half of the resized bounding box for jersey colour
         top_half_image = image_resized[:image_resized.shape[0] // 2, :]
-        print(top_half_image.shape)
 
         # Get clustering model
         kmeans = self.get_clustering_model(top_half_image)

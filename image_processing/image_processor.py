@@ -74,7 +74,7 @@ class ImageProcessor:
         # Assign teams
         self.team_assigner = TeamAssigner()
         self.team_assigner.assign_team_colour(input_image, player_detections)
-        print(self.team_assigner)
+        
         # Add team and role to each player box
         for player in player_boxes:
             team_id = self.team_assigner.get_player_team(input_image, player['coords'], player_id=player['id'])

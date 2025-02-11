@@ -8,34 +8,38 @@ class CoordinateTransformer:
 
     def transform_coordinates(self, x_min, _, x_max, y_max):
         x_center = (x_min + x_max) / 2
-       # y_center = (y_min + y_max) / 2
         y_center = y_max 
 
         x_normalised = x_center * (PITCH_LENGTH / self.image_size)  
         y_normalised = y_center * (PITCH_WIDTH / self.image_size)  
         return np.array([x_normalised, y_normalised])  # Ensure a NumPy array output
     
-
-    def append_team_colour_and_role_to_coordinates(self, new_player_coordinates, processed_players):
+    def assign_roles_and_append_team_colour(self, new_player_coordinates, processed_players, team1_role, team2_role):
         """
-        Appends the flipped team color to each player's new coordinates and returns as a NumPy array.
+        Assigns roles to players based on their team and appends the flipped team color and role
+        to each player's new coordinates.
 
         Parameters:
-        new_player_coordinates (array-like): A list or array of new player coordinates.
-        processed_players (list of dicts): A list of players, where each player is a dictionary
-                                        containing their 'team_colour'.
+        - new_player_coordinates (array-like): A list or array of new player coordinates.
+        - processed_players (list of dicts): A list of players, where each player has a 'team' and 'team_colour'.
+        - team1_role (str): Role for team 1 (e.g., "Attack").
+        - team2_role (str): Role for team 2 (e.g., "Defense").
 
         Returns:
-        numpy.ndarray: A NumPy array of coordinates with the flipped team color appended.
+        - numpy.ndarray: A NumPy array with coordinates, flipped team color, and assigned role.
         """
-        new_player_coordinates_with_colour_and_role = [
-            np.append(np.append(new_coordinates, np.flip(player['team_colour'])), player['role'])
-            for new_coordinates, player in zip(new_player_coordinates, processed_players)
-        ]
-        
-        # Convert the list to a NumPy array and return it
+        new_player_coordinates_with_colour_and_role = []
+
+        for new_coordinates, player in zip(new_player_coordinates, processed_players):
+            # Assign the role based on the team
+            player['role'] = team1_role if player['team'] == 1 else team2_role
+
+            # Append flipped team color and role
+            combined_data = np.append(np.append(new_coordinates, np.flip(player['team_colour'])), player['role'])
+            new_player_coordinates_with_colour_and_role.append(combined_data)
+
         return np.array(new_player_coordinates_with_colour_and_role)
-        
+
     def transform_player(self, players):
         transformed_players = [self.transform_coordinates(*player['coords']) for player in players]
         return np.array(transformed_players)  # Convert list of arrays to NumPy array (N, 2)

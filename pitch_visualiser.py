@@ -1,31 +1,7 @@
 from mplsoccer import Pitch
 import matplotlib.pyplot as plt
 import numpy as np
-import cv2
 from utils.utils import CONFIG_VERTICES, PITCH_WIDTH, PITCH_LENGTH, COLOUR_MAP
-
-def display_player_data(processed_players, team1_role, team2_role):
-    for player in processed_players:
-                player['role'] = team1_role if player['team'] == 1 else team2_role
-                print(f"PLAYER: {player}")
-
-def display_referee_data(referees):
-    for referee in referees:
-        print(f"REFEREE: {referee}") 
-
-def display_goalkeeper_data(goalkeepers):
-    for goalkeeper in goalkeepers:
-        print(f"GOALKEEPER: {goalkeeper}")  
-
-def display_football_data(footballs):
-    for football in footballs:
-        print(f"FOOTBALL: {football}")   
-    
-def display_keypoint_data(keypoints): 
-    # Extract keypoints and print them
-    for idx, keypoint in enumerate(keypoints):
-        x, y, confidence = keypoint[0], keypoint[1], keypoint[2]
-        print(f"Keypoint {idx + 1}: X: {x:.2f}, Y: {y:.2f}, Confidence: {confidence:.4f}")
 
 def find_relevant_players(players, attack_direction):
     """
@@ -63,7 +39,7 @@ def check_offside(forward_player, back_player, attack_direction):
     Determines if the attacker is offside.
     Returns the color (red for offside, green for onside).
     """
-
+    
     direction_multiplier = 1 if attack_direction.lower() == "right" else -1
     is_offside = (direction_multiplier * forward_player[0]) > (direction_multiplier * back_player[0])
     
@@ -74,8 +50,7 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
     # Initialise pitch with updated dimensions
     pitch = Pitch(pitch_type='custom', pitch_width=PITCH_WIDTH, pitch_length=PITCH_LENGTH, 
                   goal_type='box', linewidth=2, line_color='#E0E0E0', pitch_color='#1A1A1D')
-    print(f"pitch visualiser attack direction: {attack_direction}")
-    print(f"pitch visualiser player: {players}")
+    
     # Create figure
     fig, ax = pitch.draw(figsize=(10, 6))
 
@@ -100,6 +75,8 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
         player_colours = np.float32(players[:, 2:5]) / 255
         
         forward_player, back_player = find_relevant_players(players, attack_direction)
+        print(f"Forward Player: {forward_player}, Back Player: {back_player}")
+        
         attacker_colour = check_offside(forward_player, back_player, attack_direction)
         
         ax.scatter(player_positions[:, 0], player_positions[:, 1], color=player_colours, s=marker_size, edgecolors='white')
