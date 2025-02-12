@@ -63,11 +63,11 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
     ax.invert_yaxis()
     
     # Plot pitch markers
-    #ax.scatter(CONFIG_VERTICES[:, 0], CONFIG_VERTICES[:, 1], color='yellow', s=150, edgecolors='black', zorder=3, label='Pitch Markers')
+    #ax.scatter(CONFIG_VERTICES[:, 0], CONFIG_VERTICES[:, 1], color='yellow', s=marker_size, edgecolors='white', zorder=3, label='Pitch Markers')
 
     # Plot transformed points if available
     #if transformed_points is not None and transformed_points.size > 0.1:
-    #    ax.scatter(transformed_points[:, 0], transformed_points[:, 1], color='yellow', s=100, edgecolors='black', zorder=4, label='Transformed Points')
+    #    ax.scatter(transformed_points[:, 0], transformed_points[:, 1], color='yellow', s=mark_size, edgecolors='white', zorder=4, label='Transformed Points')
     
     # Plot players
     if players is not None:
