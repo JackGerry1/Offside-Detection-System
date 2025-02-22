@@ -3,7 +3,7 @@ from ultralytics import YOLO
 import cv2
 from team_assigner.team_assigner import TeamAssigner
 from visualisation.visualise import visualise_detections
-from utils.utils import PLAYER_CLASS_ID, MODEL_PATH
+from utils.utils import PLAYER_CLASS_ID, MODEL_PATH, COLOUR_MAP
 
 # Paths
 CURRENT_DIR = os.getcwd()
@@ -11,14 +11,15 @@ CURRENT_DIR = os.getcwd()
 # Model path
 model = YOLO(MODEL_PATH)
 
-# Define colours for different classes
-colour_map = {
-    "referee": (0, 0, 0),  # Black
-    "football": (0, 165, 255),  # Orange
-    "goalkeeper": (255, 105, 180),  # Pink
-}
-
 def process_single_image(image_path):
+    """
+    Process single image with YOLO modal. 
+
+    Args:
+        image_path: single input image
+    Outputs:
+        image with bounding boxes for detected classes. 
+    """
     input_image = cv2.imread(image_path)
     
     # Run YOLO detection
@@ -34,22 +35,6 @@ def process_single_image(image_path):
                 xyxy = box.xyxy[0].tolist()  # Extract bounding box coordinates as a list
                 player_detections.append(xyxy)
 
-    # Process the detected bounding boxes
-    for r in results:
-        for i, box in enumerate(r.boxes):  # Access bounding boxes
-            class_id = int(box.cls[0])  # Class ID for the detection
-            if class_id == PLAYER_CLASS_ID:  # Only process "player" detections
-                xyxy = box.xyxy[0].tolist()  # Get bounding box coordinates [x_min, y_min, x_max, y_max]
-                x_min, y_min, x_max, y_max = map(int, xyxy)  # Convert to integers
-
-                # Crop the bounding box from the original image
-                cropped_image = input_image[y_min:y_max, x_min:x_max]
-                # Save the cropped image
-                cropped_image_path = os.path.join(CURRENT_DIR, f"cropped_player_{i}.jpg")
-                cv2.imwrite(cropped_image_path, cropped_image)
-
-                print(f"Cropped player image saved at: {cropped_image_path}")
-
     # Initialise TeamAssigner
     team_assigner = TeamAssigner()
 
@@ -57,7 +42,7 @@ def process_single_image(image_path):
     team_assigner.assign_team_colour(input_image, player_detections)
 
     # Visualise results
-    output_image, _ = visualise_detections(input_image, results, model, team_assigner, PLAYER_CLASS_ID, colour_map, "", "", "")
+    output_image, _ = visualise_detections(input_image, results, model, team_assigner, PLAYER_CLASS_ID, COLOUR_MAP, "", "", "")
 
     # Save the output image
     output_path = os.path.join(CURRENT_DIR, "output_test_image.jpg")
@@ -66,6 +51,15 @@ def process_single_image(image_path):
     print(f"Output image saved at: {output_path}")
 
 def process_directory(image_directory, save_directory):
+    """
+    Process with YOLO for all images in a directory. 
+
+    Args:
+        image_directory: image directory that is to be processed. 
+        save_directory: where the output images are saved. 
+    Outputs:
+        Processed directory of images. 
+    """
     # Ensure the save directory exists
     os.makedirs(save_directory, exist_ok=True)
 
@@ -97,14 +91,19 @@ def process_directory(image_directory, save_directory):
             team_assigner.assign_team_colour(input_image, player_detections)
 
             # Visualise results
-            output_image, _ = visualise_detections(input_image, results, model, team_assigner, PLAYER_CLASS_ID, colour_map, "", "", "")
+            output_image, _ = visualise_detections(input_image, results, model, team_assigner, PLAYER_CLASS_ID, COLOUR_MAP, "", "", "")
 
             # Save the output image
             cv2.imwrite(save_path, output_image)
             print(f"Processed and saved: {filename}")
 
 def main():
+    """
+    Chooses whether single image or image directory is processed.  
 
+    Outputs:
+        Images with bounding boxes, masks, and labels visualised.
+    """
     # Prompt the user to choose the mode
     mode = input("Enter '1' for a single image test or '2' for a directory of images: ").strip()
 
@@ -116,7 +115,7 @@ def main():
     elif mode == '2':
         # Prompt for the image directory and save directory
         image_directory = f'{CURRENT_DIR}/football-field-detection-v1/test/images'
-        save_directory = f'{CURRENT_DIR}/team_colour_predictions3/'
+        save_directory = f'{CURRENT_DIR}/team_colour_predictions2/'
         process_directory(image_directory, save_directory)
 
     else:

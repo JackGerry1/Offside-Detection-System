@@ -95,8 +95,9 @@ class ImageProcessor:
         self.referee_results = referee_boxes
         self.football_results = football_boxes
 
+        # get keypoint results 
         final_output_image, extracted_keypoints = visualise_keypoints(output_image, keypoint_results)
-        self.keypoint_results = extracted_keypoints  # Store keypoints for external access
+        self.keypoint_results = extracted_keypoints  
         
         return final_output_image
 

@@ -15,6 +15,14 @@ class TeamAssigner:
         self.player_team_dict = {}
 
     def get_clustering_model(self, image):
+        """
+        Get Team Shirt Colour For Each Player
+
+        Args:
+            image: Bounding box of players detected. 
+        Outputs:
+            Cluster of team colour values, separated from the background
+        """
         # Reshape the image to 2D array
         image_2d = image.reshape(-1, 3)
 
@@ -25,6 +33,14 @@ class TeamAssigner:
         return kmeans
 
     def enhance_colour(self, colour):
+        """
+        Enhance the detected player shirt colour to make classification into two teams. 
+
+        Args:
+            colour: player recongised team colour
+        Outputs:
+            enhanced colour output for the classified team colours. 
+        """
         # Strengthen the highest value and weaken smaller ones
         max_val = np.max(colour)
         modified_colour = np.array([
@@ -35,6 +51,15 @@ class TeamAssigner:
         return np.clip(modified_colour, 0, 255)
 
     def get_player_colour(self, image, bbox):
+        """
+        Obtain Player Shirt Colour
+
+        Args:
+            image: player image
+            bbox: bounding box of player.  
+        Outputs:
+            Enhanced Colour for each of the players. 
+        """
         # Extract the bounding box region from the image
         x_min, y_min, x_max, y_max = map(int, bbox)
         image = image[y_min:y_max, x_min:x_max]
@@ -69,6 +94,15 @@ class TeamAssigner:
         return enhanced_colour
 
     def assign_team_colour(self, image, player_detections):
+        """
+        Assign two team colours based on shirt colour
+
+        Args:
+            image: Uploded Image of Football Match
+            player_detections: array of detected players
+        Outputs:
+            Two teams classifed using k-means clustering. 
+        """
         # Extract player colours from all detections
         player_colours = []
         for bbox in player_detections:
@@ -84,6 +118,16 @@ class TeamAssigner:
         self.team_colours[2] = kmeans.cluster_centers_[1]
 
     def get_player_team(self, image, bbox, player_id):
+        """
+        Assign players into team 1 and team 2. 
+
+        Args:
+            image: uploaded image of a football match 
+            bbox: Player detection bounding box. 
+            player_id: id of that players corresponding bounding box
+        Outputs:
+            Team_id for each player. 
+        """
         # If already assigned, return the team
         if player_id in self.player_team_dict:
             return self.player_team_dict[player_id]

@@ -4,7 +4,7 @@ import numpy as np
 
 def visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map, team1_role, team2_role, attack_direction, custom_highlights=None):
     """
-    Visualize YOLO detection results with class-specific colours, bounding boxes, and masks.
+    Visualise YOLO detection results with class-specific colours, bounding boxes, and masks.
 
     Args:
         input_image (np.ndarray): The input image.
@@ -39,7 +39,6 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
     
     # for all results, extract information about boxes, masks and classes. 
     for r in results:
-        #masks = r.masks.data.cpu().numpy() 
         for i, box in enumerate(r.boxes): 
 
             # extract coordinates, class name and confidence values for all detections.  
@@ -90,6 +89,15 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
     return output_image, player_boxes
 
 def visualise_keypoints(saved_image, keypoint_results):
+    """
+    Visualise keypoints if over 0.5 and store the rest. 
+
+    Args:
+        saved_image: image uploaded by the user. 
+        keypoint_results: The keypoint_results detected from the image. 
+    Outputs:
+        Image with bounding boxes, masks, and labels visualized.
+    """
     output_image = saved_image.copy()
     keypoints_data = [] 
     

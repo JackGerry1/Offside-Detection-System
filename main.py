@@ -202,9 +202,13 @@ class ImageApp:
             # **Show the "Visualize Pitch" button after roles are assigned**
             self.visualize_pitch_button.pack(pady=0)
             
-    # pass data about keypoints and detected, refs, players, goalkeepers and footballs. 
     def pass_data(self): 
-        """ Calls the pitch visualiser with processed player data and keypoints, only if data is available. """
+        """ 
+        Calls the pitch visualiser with processed data and keypoints.
+
+        Output:
+            2D Pitch visualisation based on positions of detected classes and keypoints. 
+        """
         transformed_footballs = None
         transformed_goalkeepers = None
         transformed_players = None
@@ -216,6 +220,7 @@ class ImageApp:
 
         if processor.keypoint_results:
             
+            # obtain keypoints and calculate homography matrix. 
             source_pts, valid_indices = position_transformer.normalise_keypoints(processor.keypoint_results)
             H, _ = position_transformer.calculate_homography(source_pts, valid_indices)
             
@@ -223,9 +228,8 @@ class ImageApp:
             transformed_points = position_transformer.transform_positions(H, source_pts.reshape(-1, 2))
 
             print(f"TRANSFORMED KEYPOINTS: {transformed_points}")
-            
+        # Transformed Player coordinates     
         if self.processed_players:
-            # Transform player coordinates
             transformed_players = coordinate_transformer.transform_player(self.processed_players)
             
             # Transform positions (apply new transformation to the player coordinates)
@@ -235,25 +239,29 @@ class ImageApp:
             new_player_coordinates_with_colour_and_role = coordinate_transformer.assign_roles_and_append_team_colour(new_player_coordinates, self.processed_players, self.team1_role_var.get(), self.team2_role_var.get()) 
             
             print(f"NEW PLAYER COORDINATES WITH COLOUR: {new_player_coordinates_with_colour_and_role}")
-
+        
+        # Transformed Referee coordinates     
         if processor.referee_results:
             transformed_referees = coordinate_transformer.transform_referee(processor.referee_results)
 
             new_referee_coordinates = position_transformer.transform_positions(H, transformed_referees)
             print(f"NEW REFEREE COORDINATES: {new_referee_coordinates}")
-
+        
+        # Transformed Goalkeeper coordinates     
         if processor.goalkeeper_results:
             transformed_goalkeepers = coordinate_transformer.transform_goalkeeper(processor.goalkeeper_results)
 
             new_goalkeeper_coordinates = position_transformer.transform_positions(H, transformed_goalkeepers)
             print(f"NEW GOALKEEPER COORDINATES: {new_goalkeeper_coordinates}")
-
+        
+        # Transformed Football coordinates     
         if processor.football_results:
             transformed_footballs = coordinate_transformer.transform_football(processor.football_results)
 
             new_football_coordinates = position_transformer.transform_positions(H, transformed_footballs)
             print(f"NEW FOOTBALL COORDINATES: {new_football_coordinates}")
 
+        # visualise the pitch
         pitch_display(new_player_coordinates_with_colour_and_role, new_referee_coordinates, new_goalkeeper_coordinates, new_football_coordinates, transformed_points, self.attack_direction_var.get()) 
 
 

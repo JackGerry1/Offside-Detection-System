@@ -11,7 +11,12 @@ class PositionTransformer:
         to match the dimensions of the 2D pitch (110m x 69m).
         
         Filters out invalid keypoints (e.g., confidence < 0.5).
-        Returns both the normalised keypoints and their valid indices.
+
+        Args: 
+            keypoints: source keypoints coordinates 
+
+        Output: 
+            both the normalised keypoints and their valid indices.
         """
         source_pts = []
         valid_indices = []
@@ -29,6 +34,17 @@ class PositionTransformer:
         """
         Computes homography matrix using filtered keypoints.
         Only keeps target keypoints corresponding to valid source keypoints.
+
+        Args: 
+            source_pts: identified keypoints from the YOLO model. 
+            valid_indices: index of the relevant keypoints to be transformed into destination keypoints. 
+
+        References: 
+        Yadav, V. (2020). Homography: the Main Idea behind Many CV Applications. [online] Vaibhav Yadav’s Blog. 
+        Available at: https://vaibhavyadav.github.io/2020/12/14/Image-Stitching.html [Accessed 21 Jan. 2025].
+
+        Output: 
+            Neccessary homography matrxi for transforming source coordinates to accurate 2D pitch visualisation. 
         """
         target_pts = np.array(CONFIG_VERTICES, dtype=np.float32)  # Load target keypoints
         
@@ -50,6 +66,17 @@ class PositionTransformer:
     def transform_positions(self, H, positions):
         """
         Applies a perspective transformation to a set of positions using a homography matrix.
+
+        Args: 
+            H: homography matrix calculated previously 
+            positions: players, referees, goalkeepers or football coordinates that need to be transformed. 
+        
+        References: 
+        Skalski, P. (2024a). Camera Calibration in Sports with Keypoints. [online] Roboflow Blog. 
+        Available at: https://blog.roboflow.com/camera-calibration-sports-computer-vision/ [Accessed 21 Jan. 2025].
+
+        Output: 
+            transformed coordinates for the input objects. 
         """
         positions_reshaped = positions.reshape(-1, 1, 2).astype(np.float32)
 

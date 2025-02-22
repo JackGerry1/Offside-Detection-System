@@ -6,6 +6,9 @@ from utils.utils import CONFIG_VERTICES, PITCH_WIDTH, PITCH_LENGTH, COLOUR_MAP
 def find_relevant_players(players, attack_direction):
     """
     Find furthest forward attacker and back defender from player coordinates.
+
+    Output: 
+        Coordinates of furthest forward attacker and furthest back defender. 
     """
     direction_multiplier = 1 if attack_direction.lower() == "right" else -1
     
@@ -37,7 +40,14 @@ def find_relevant_players(players, attack_direction):
 def check_offside(forward_player, back_player, attack_direction):
     """
     Determines if the attacker is offside.
-    Returns the color (red for offside, green for onside).
+
+    Args: 
+        forward_player: x y coordinates of attacker 
+        back_player: x y coordinates of defender
+        attack_direction: left or right specified by the user
+
+    Output:
+        Returns the color (red for offside, green for onside).
     """
     
     direction_multiplier = 1 if attack_direction.lower() == "right" else -1
@@ -46,7 +56,28 @@ def check_offside(forward_player, back_player, attack_direction):
     # red or light green
     return '#FF0000' if is_offside else '#00FF00'
 
-def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None, transformed_points=None, attack_direction=None): 
+def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None, transformed_points=None, attack_direction=None):
+    """
+    Displays pitch based on data paramters from the source image. 
+
+    Args: 
+        players: transformed coordinates of players 
+        referees: transformed coordinates of referees 
+        goalkeepers: transformed coordinates of goalkeepers 
+        footballs: transformed coordinates of footballs 
+        transformed_points: keypoints transformed positions 
+        attack_direction: left or right. 
+
+    References: 
+    Durgapal, A. and Rowlinson, A. (2021a). Pitch Basics — Mplsoccer 1.4.0 Documentation. [online] Readthedocs.io. 
+    Available at: https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_setup/plot_pitches.html#sphx-glr-gallery-pitch-setup-plot-pitches-py [Accessed 21 Feb. 2025].
+
+    Durgapal, A. and Rowlinson, A. (2021b). Scatter — Mplsoccer 1.4.0 Documentation. [online] Readthedocs.io. 
+    Available at: https://mplsoccer.readthedocs.io/en/latest/gallery/pitch_plots/plot_scatter.html [Accessed 21 Feb. 2025].
+
+    Output: 
+        2D transformed pitch with relevant objects visualised accurately. 
+    """
     # Initialise pitch with updated dimensions
     pitch = Pitch(pitch_type='custom', pitch_width=PITCH_WIDTH, pitch_length=PITCH_LENGTH, 
                   goal_type='box', linewidth=2, line_color='#E0E0E0', pitch_color='#1A1A1D')

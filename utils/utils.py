@@ -1,4 +1,3 @@
-import cv2
 import os
 import numpy as np
 
@@ -13,9 +12,11 @@ GOALKEEPER_CLASS_ID = 1
 PLAYER_CLASS_ID = 2
 REFEREE_CLASS_ID = 3
 
+# define pitch dimensions
 PITCH_WIDTH = 69
 PITCH_LENGTH = 110
 
+# colour map for bounding boxes of classes 
 COLOUR_MAP = {
     "referee": (0, 215, 255),  # Bright Gold
     "football": (255, 255, 255),  # White
