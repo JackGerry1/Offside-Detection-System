@@ -6,11 +6,11 @@ CURRENT_DIR = os.getcwd()
 
 # Define the image directories
 image_directory_keypoints = f'{CURRENT_DIR}/football-field-detection-v1/test/images/'
-image_directory_players = f'{CURRENT_DIR}/football-players-detection-1/test/images/'
+image_directory_players = f'/home/jack/Documents/offside_and_onside_images/'
 
 # Define the save directories
 save_directory_keypoints = f'{CURRENT_DIR}/keypoint_predictions/'
-save_directory = f'{CURRENT_DIR}/player_referee_football_goalkeeper_predictions/'
+save_directory = f'{CURRENT_DIR}/non_dataset_test/'
 
 # Paths to models
 model_path = f'{CURRENT_DIR}/models/YOLOV8N_BEST.pt'
@@ -29,17 +29,4 @@ results_segmentation = modal(
     project=save_directory,
     name='.',  # Prevents creation of subfolders
     exist_ok=True  # Allows saving in an existing directory
-)
-
-# Keypoints detection
-model_keypoints = YOLO(keypoints_model_path)
-
-os.makedirs(save_directory_keypoints, exist_ok=True)
-
-results_keypoints = model_keypoints(
-    source=image_directory_keypoints,
-    save=True,
-    project=save_directory_keypoints,
-    name='.',
-    exist_ok=True
 )
