@@ -6,6 +6,9 @@ from utils.utils import CONFIG_VERTICES, PITCH_WIDTH, PITCH_LENGTH, COLOUR_MAP
 def find_relevant_players(players, attack_direction):
     """
     Find furthest forward attacker and back defender from player coordinates.
+    Args: 
+        players: array of players coordinate and role.
+        attack_direction: left or right as specified by the user. 
 
     Output: 
         Coordinates of furthest forward attacker and furthest back defender. 
