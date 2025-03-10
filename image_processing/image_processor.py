@@ -64,13 +64,12 @@ class ImageProcessor:
                 class_id = int(box.cls[0])
                 xyxy = box.xyxy[0].tolist()
         
-                if class_id in class_map:
-                    target_list, player_box_list = class_map[class_id]
-                    target_list.append(xyxy)
+                target_list, player_box_list = class_map[class_id]
+                target_list.append(xyxy)
         
-                    # Only add to player_boxes if it's a player detection
-                    if player_box_list is not None:
-                        player_box_list.append({"coords": xyxy, "id": i})
+                # Only add to player_boxes if it's a player detection
+                if player_box_list is not None:
+                    player_box_list.append({"coords": xyxy, "id": i})
         # Assign teams
         self.team_assigner = TeamAssigner()
         self.team_assigner.assign_team_colour(input_image, player_detections)
