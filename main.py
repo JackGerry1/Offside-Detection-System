@@ -83,10 +83,10 @@ class ImageApp:
         self.assign_roles_frame.pack_forget()
 
 
-        # Create Visualize Pitch button but hide it initially
-        self.visualize_pitch_button = tk.Button(self.root, text="Detect Offside", command=self.pass_data)
-        self.visualize_pitch_button.pack()
-        self.visualize_pitch_button.pack_forget() 
+        # Create Offside Detection button but hide it initially
+        self.offside_detection_button= tk.Button(self.root, text="Detect Offside", command=self.pass_data)
+        self.offside_detection_button.pack()
+        self.offside_detection_button.pack_forget() 
 
 
     def upload_and_display_image(self):
@@ -199,8 +199,8 @@ class ImageApp:
 
             self.update_image(updated_image)
         
-            # **Show the "Visualize Pitch" button after roles are assigned**
-            self.visualize_pitch_button.pack(pady=0)
+            # Show the "Offside Detection" button after roles are assigned
+            self.offside_detection_button.pack(pady=0)
             
     def pass_data(self): 
         """ 
@@ -263,9 +263,6 @@ class ImageApp:
 
         # visualise the pitch
         pitch_display(new_player_coordinates_with_colour_and_role, new_referee_coordinates, new_goalkeeper_coordinates, new_football_coordinates, transformed_points, self.attack_direction_var.get()) 
-
-
-        
         
 # Run the GUI
 if __name__ == "__main__":

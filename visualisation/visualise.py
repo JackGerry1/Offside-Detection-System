@@ -103,14 +103,20 @@ def visualise_keypoints(saved_image, keypoint_results):
     
     # Add keypoint rendering
     if keypoint_results:
+        # loop through all keypoints
         for r in keypoint_results:
             keypoints = r.keypoints.data.cpu().numpy()
             for kp_set in keypoints:
                 for kp in kp_set:
+                    # extract x y and confidence for each keypoints
                     x, y, conf = kp
 
+                    # append keypoints_data for homography transformation based on 2D pitch keypoints 
+                    # all keypoints are appended so the matching 2D pitch keypoints can be filtered. 
                     keypoints_data.append(kp)
-                    if conf > 0.5:  # Only render keypoints with confidence > 0.5
+                    
+                    # Only render keypoints with confidence > 0.5
+                    if conf > 0.5:  
                         cv2.circle(output_image, (int(x), int(y)), 5, (0, 255, 255), -1)
     
     return output_image, keypoints_data
