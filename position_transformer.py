@@ -21,13 +21,15 @@ class PositionTransformer:
         source_pts = []
         valid_indices = []
         
+        # loop through keypoints and get normalised values if the confident is > 0.5 and append to a valid_indices arrays. 
         for i, (x, y, conf) in enumerate(keypoints):
-            if conf > 0.5:  # Keep only high-confidence keypoints
-                x_normalised = x * (PITCH_LENGTH / self.image_size)  # Scale x-coordinate
-                y_normalised = y * (PITCH_WIDTH / self.image_size)  # Flip Y and scale to match pitch
+            if conf > 0.5: 
+                x_normalised = x * (PITCH_LENGTH / self.image_size) 
+                y_normalised = y * (PITCH_WIDTH / self.image_size)  
                 source_pts.append([x_normalised, y_normalised])
-                valid_indices.append(i)  # Store the index of the valid keypoint
+                valid_indices.append(i)
 
+        # return relevant source pts reshaped correctly 
         return np.array(source_pts, dtype=np.float32).reshape(-1, 1, 2), valid_indices
     
     def calculate_homography(self, source_pts, valid_indices):
@@ -46,8 +48,11 @@ class PositionTransformer:
         Output: 
             Neccessary homography matrxi for transforming source coordinates to accurate 2D pitch visualisation. 
         """
-        target_pts = np.array(CONFIG_VERTICES, dtype=np.float32)  # Load target keypoints
         
+        # Load target keypoints
+        target_pts = np.array(CONFIG_VERTICES, dtype=np.float32)  
+        
+        # error handling
         if len(valid_indices) == 0:
             raise ValueError("No valid keypoints to compute homography.")
 
@@ -78,8 +83,10 @@ class PositionTransformer:
         Output: 
             transformed coordinates for the input objects. 
         """
+        # reshape the posistions prepared for perspective transformations
         positions_reshaped = positions.reshape(-1, 1, 2).astype(np.float32)
 
+        # get the relevant transformed coordinates for the 2D pitch and return them. 
         transformed_positions = cv2.perspectiveTransform(positions_reshaped, H)
 
         return transformed_positions.reshape(-1, 2).astype(np.float32)

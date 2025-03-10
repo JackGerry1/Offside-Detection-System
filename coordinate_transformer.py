@@ -65,7 +65,7 @@ class CoordinateTransformer:
         - Transformed player coordinates in np.array
         """
         transformed_players = [self.transform_coordinates(*player['coords']) for player in players]
-        return np.array(transformed_players)  # Convert list of arrays to NumPy array (N, 2)
+        return np.array(transformed_players)  
 
     def transform_referee(self, referees):
         """

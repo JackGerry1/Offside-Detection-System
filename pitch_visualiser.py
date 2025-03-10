@@ -10,6 +10,7 @@ def find_relevant_players(players, attack_direction):
     Output: 
         Coordinates of furthest forward attacker and furthest back defender. 
     """
+    # determine direction multipler based on attack direction
     direction_multiplier = 1 if attack_direction.lower() == "right" else -1
     
     # Initialise extremes
@@ -18,14 +19,16 @@ def find_relevant_players(players, attack_direction):
     forward_player = None
     back_player = None
     
+    # find relevant players
     for player in players:
         x = float(player[0])
         y = float(player[1])
         role = player[5]
         
-        # Compare x-positions based on direction
+        # get position
         pos_value = direction_multiplier * x
         
+        # find furthest foward attacker and furthest back defender. 
         if role == "Attack" and pos_value > max_attack_x:
             max_attack_x = pos_value
             forward_player = (x, y)
@@ -50,6 +53,7 @@ def check_offside(forward_player, back_player, attack_direction):
         Returns the color (red for offside, green for onside).
     """
     
+    # determine offside based on attack direction
     direction_multiplier = 1 if attack_direction.lower() == "right" else -1
     is_offside = (direction_multiplier * forward_player[0]) > (direction_multiplier * back_player[0])
     
@@ -84,7 +88,8 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
     
     # Create figure
     fig, ax = pitch.draw(figsize=(10, 6))
-
+    
+    # colours for different markers based on class
     ref_colour = np.flip(np.array(COLOUR_MAP["referee"]) / 255)
     football_colour = np.flip(np.array(COLOUR_MAP["football"]) / 255)
     goalkeeper_colour = np.flip(np.array(COLOUR_MAP["goalkeeper"]) / 255)
@@ -102,14 +107,19 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
     
     # Plot players
     if players is not None:
+
+        # get player positions and colours. 
         player_positions = np.float32(players[:, :2])
         player_colours = np.float32(players[:, 2:5]) / 255
         
+        # find forward and back player coordinates
         forward_player, back_player = find_relevant_players(players, attack_direction)
         print(f"Forward Player: {forward_player}, Back Player: {back_player}")
         
+        # determine attacker colour based on offside result. 
         attacker_colour = check_offside(forward_player, back_player, attack_direction)
         
+        # plot the players positions. 
         ax.scatter(player_positions[:, 0], player_positions[:, 1], color=player_colours, s=marker_size, edgecolors='white')
 
         # Circle size and offset calculations
@@ -120,12 +130,12 @@ def pitch_display(players=None, referees=None, goalkeepers=None, footballs=None,
         line_defender = back_player[0] + (direction_multiplier * circle_radius)
         line_attacker = forward_player[0] + (direction_multiplier * circle_radius)
 
-        # Draw tangent line
+        # Draw line across the pitch representing onside or offside across the edge of the players
         ax.plot([line_defender, line_defender], [0, PITCH_WIDTH], color='blue', linewidth=1)
         ax.plot([line_attacker, line_attacker], [0, PITCH_WIDTH], color=attacker_colour, linewidth=1)
 
+        # draw coloured circles for forward attacker and furthest back defender
         ax.scatter(forward_player[0], forward_player[1], color=attacker_colour, s=marker_size, edgecolors='white')
-
         ax.scatter(back_player[0], back_player[1], color='blue', s=marker_size, edgecolors='white')
 
 
