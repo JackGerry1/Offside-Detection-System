@@ -21,7 +21,7 @@ def process_single_image(image_path):
         image with bounding boxes for detected classes. 
     """
     input_image = cv2.imread(image_path)
-    
+
     # Run YOLO detection
     results = model(image_path)
 
