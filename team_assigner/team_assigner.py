@@ -67,7 +67,7 @@ class TeamAssigner:
         # resize the image for consistency
         image_resized = cv2.resize(image, (64, 64))
         
-        # Focus on the top half of the resized bounding box for jersey colour
+        # Focus on the top half of the resized bounding box for shirt colour
         top_half_image = image_resized[:image_resized.shape[0] // 2, :]
 
         # Get clustering model
