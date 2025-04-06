@@ -13,8 +13,8 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
         team_assigner: TeamAssigner instance for assigning team colours.
         player_class_id (int): Class ID for players.
         colour_map (dict): Mapping of class names to BGR colours.
-        team1_role (str): Role assigned to Team 1 ("Attack" or "Defense").
-        team2_role (str): Role assigned to Team 2 ("Attack" or "Defense").
+        team1_role (str): Role assigned to Team 1 ("Attack" or "Defence").
+        team2_role (str): Role assigned to Team 2 ("Attack" or "Defence").
         attack_direction (str): Direction of the attack ("left" or "right").
     
     References: 
@@ -28,7 +28,7 @@ def visualise_detections(input_image, results, model, team_assigner, player_clas
         Available at: https://docs.ultralytics.com/modes/predict/ [Accessed 1 Jan. 2025].
 
     Outputs:
-        Image with bounding boxes, masks, and labels visualized.
+        Image with bounding boxes, masks, and labels visualised.
     """
 
     # initialise output image and empty player_boxes array. 
@@ -96,7 +96,7 @@ def visualise_keypoints(saved_image, keypoint_results):
         saved_image: image uploaded by the user. 
         keypoint_results: The keypoint_results detected from the image. 
     Outputs:
-        Image with bounding boxes, masks, and labels visualized.
+        Image with bounding boxes, masks, and labels visualised.
     """
     output_image = saved_image.copy()
     keypoints_data = [] 

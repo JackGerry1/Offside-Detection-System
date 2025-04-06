@@ -56,18 +56,18 @@ class ImageApp:
         # Role assignment drop down menu for team role and attack direction.
         self.assign_roles_frame = tk.Frame(self.root)
         self.team1_role_var = StringVar(value="Attack")
-        self.team2_role_var = StringVar(value="Defense")
+        self.team2_role_var = StringVar(value="Defence")
         self.attack_direction_var = StringVar(value="Left")  
 
         # Team role selection
         team1_label = tk.Label(self.assign_roles_frame, text="Team 1 Role:")
         team1_label.grid(row=0, column=0, padx=5, pady=5)
-        team1_role_menu = tk.OptionMenu(self.assign_roles_frame, self.team1_role_var, "Attack", "Defense")
+        team1_role_menu = tk.OptionMenu(self.assign_roles_frame, self.team1_role_var, "Attack", "Defence")
         team1_role_menu.grid(row=0, column=1, padx=5, pady=5)
 
         team2_label = tk.Label(self.assign_roles_frame, text="Team 2 Role:")
         team2_label.grid(row=1, column=0, padx=5, pady=5)
-        team2_role_menu = tk.OptionMenu(self.assign_roles_frame, self.team2_role_var, "Attack", "Defense")
+        team2_role_menu = tk.OptionMenu(self.assign_roles_frame, self.team2_role_var, "Attack", "Defence")
         team2_role_menu.grid(row=1, column=1, padx=5, pady=5)
 
         # Attack direction selection
@@ -171,7 +171,7 @@ class ImageApp:
     
     def assign_roles(self):
         """
-        Assigns roles of attack and defense to the teams identifed earlier, alongside the attack direction.  
+        Assigns roles of attack and Defence to the teams identifed earlier, alongside the attack direction.  
 
         Output:
             The processed image with updated labels for the team's role, alongside the attack direction.

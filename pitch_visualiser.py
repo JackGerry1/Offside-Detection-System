@@ -36,7 +36,7 @@ def find_relevant_players(players, attack_direction):
             max_attack_x = pos_value
             forward_player = (x, y)
             
-        if role == "Defense" and pos_value > max_defend_x:
+        if role == "Defence" and pos_value > max_defend_x:
             max_defend_x = pos_value
             back_player = (x, y)
             
@@ -53,7 +53,7 @@ def check_offside(forward_player, back_player, attack_direction):
         attack_direction: left or right specified by the user
 
     Output:
-        Returns the color (red for offside, green for onside).
+        Returns the colour (red for offside, green for onside).
     """
     
     # determine offside based on attack direction

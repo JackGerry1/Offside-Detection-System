@@ -30,17 +30,17 @@ class CoordinateTransformer:
     
     def assign_roles_and_append_team_colour(self, new_player_coordinates, processed_players, team1_role, team2_role):
         """
-        Assigns roles to players based on their team and appends the flipped team color and role
+        Assigns roles to players based on their team and appends the flipped team colour and role
         to each player's new coordinates.
 
         Parameters:
         - new_player_coordinates (array-like): A list or array of new player coordinates.
         - processed_players (list of dicts): A list of players, where each player has a 'team' and 'team_colour'.
         - team1_role (str): Role for team 1 (e.g., "Attack").
-        - team2_role (str): Role for team 2 (e.g., "Defense").
+        - team2_role (str): Role for team 2 (e.g., "Defence").
 
         Returns:
-        - numpy.ndarray: A NumPy array with coordinates, flipped team color, and assigned role.
+        - numpy.ndarray: A NumPy array with coordinates, flipped team colour, and assigned role.
         """
         new_player_coordinates_with_colour_and_role = []
 
@@ -48,7 +48,7 @@ class CoordinateTransformer:
             # Assign the role based on the team
             player['role'] = team1_role if player['team'] == 1 else team2_role
 
-            # Append flipped team color and role
+            # Append flipped team colour and role
             combined_data = np.append(np.append(new_coordinates, np.flip(player['team_colour'])), player['role'])
             new_player_coordinates_with_colour_and_role.append(combined_data)
 

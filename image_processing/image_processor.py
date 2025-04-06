@@ -83,7 +83,7 @@ class ImageProcessor:
 
 
         # Visualise initial results, the empty strings represent the team roles and attack direction, which cannot be decided 
-        # until the teams are categorised in attack and defense. 
+        # until the teams are categorised in attack and Defence. 
         output_image, player_boxes = visualise_detections(
             input_image, results, self.model, self.team_assigner, PLAYER_CLASS_ID, self.colour_map, "", "", ""
         )
