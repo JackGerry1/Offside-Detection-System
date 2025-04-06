@@ -22,7 +22,7 @@ class ImageApp:
     def __init__(self, root):
         # title and dimensions setup
         self.root = root
-        self.root.title("Image Upload and Processing GUI")
+        self.root.title("Offside Detection Prototype")
         self.root.geometry("800x950")
 
         # initialsing paths for upload image result image custom highlights and processed players
