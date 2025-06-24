@@ -116,7 +116,8 @@ class TeamAssigner:
         self.kmeans = kmeans
         self.team_colours[1] = kmeans.cluster_centers_[0]
         self.team_colours[2] = kmeans.cluster_centers_[1]
-
+        print(self.team_colours[1])
+        print(self.team_colours[2])
     def get_player_team(self, image, bbox, player_id):
         """
         Assign players into team 1 and team 2. 

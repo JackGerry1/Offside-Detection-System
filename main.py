@@ -4,10 +4,9 @@ from tkinter import filedialog, StringVar
 from PIL import Image, ImageTk
 import os
 import cv2
-from pitch_visualiser import pitch_display
-from position_transformer import PositionTransformer
-from coordinate_transformer import CoordinateTransformer
-# import utilities and other functions
+from visualisation.pitch_visualiser import pitch_display
+from pitch_transformer.position_transformer import PositionTransformer
+from pitch_transformer.coordinate_transformer import CoordinateTransformer
 from image_processing.image_processor import ImageProcessor
 from visualisation.visualise import visualise_detections
 from utils.utils import CURRENT_DIR, MODEL_PATH, PITCH_MODEL_PATH, COLOUR_MAP, PLAYER_CLASS_ID
@@ -124,7 +123,7 @@ class ImageApp:
         """
 
         # set the update path for the image
-        updated_path = os.path.join(CURRENT_DIR, "output_updated_image.jpg")
+        updated_path = os.path.join(CURRENT_DIR, "output_image.jpg")
         cv2.imwrite(updated_path, output_image)
 
         # show the updated image on the GUI. 
@@ -153,7 +152,7 @@ class ImageApp:
             
             # store the results of the players processed, which is used for custom highlights later. 
             self.processed_players = processor.player_boxes.copy()
-            result_path = os.path.join(CURRENT_DIR, "output_single_image.jpg")
+            result_path = os.path.join(CURRENT_DIR, "output_image.jpg")
             cv2.imwrite(result_path, output_image)
 
             # show the resulting image on the GUI. 
