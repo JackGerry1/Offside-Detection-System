@@ -77,7 +77,7 @@ class PositionTransformer:
             positions: players, referees, goalkeepers or football coordinates that need to be transformed. 
         
         References: 
-        Skalski, P. (2024a). Camera Calibration in Sports with Keypoints. [online] Roboflow Blog. 
+        Skalski, P. (2024). Camera Calibration in Sports with Keypoints. [online] Roboflow Blog. 
         Available at: https://blog.roboflow.com/camera-calibration-sports-computer-vision/ [Accessed 21 Jan. 2025].
 
         Output: 

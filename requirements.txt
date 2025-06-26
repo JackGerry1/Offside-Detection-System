@@ -1,0 +1,10 @@
+ultralytics==8.0.196
+tkinter
+Pillow
+opencv-python
+roboflow
+python-dotenv
+mplsoccer
+matplotlib
+numpy
+scikit-learn

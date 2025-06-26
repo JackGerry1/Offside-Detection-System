@@ -1,6 +1,5 @@
 # import libraries 
 import cv2
-import numpy as np
 
 def visualise_detections(input_image, results, model, team_assigner, player_class_id, colour_map, team1_role, team2_role, attack_direction):
     """
