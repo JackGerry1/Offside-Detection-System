@@ -26,7 +26,6 @@ A Football Tkinter GUI, using YOLOV8 for object detection, K-means clustering fo
     - [How It Works:](#how-it-works-2)
     - [Process:](#process-2)
     - [Image Example:](#image-example-2)
-  - [](#)
   - [4. 2D Pitch Transformation (Homography)](#4-2d-pitch-transformation-homography)
     - [Description:](#description-3)
     - [How It Works:](#how-it-works-3)
